@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewIQ — Smart Interview Question Generator, Topic Q&As & Career Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header with Navigation, Search, and Login -->
+  <header class="app-header">
+    <div class="header-container">
+      <!-- Brand & Home link -->
+      <div class="brand" id="brand-home" title="Go to Home">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <h1 class="brand-title">Interview<span class="gradient-text">IQ</span></h1>
+          <p class="brand-subtitle">AI-Ready Interview Practice & Career Studio</p>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="nav-links">
+        <button class="nav-btn active" id="nav-home">🏠 Home</button>
+        <button class="nav-btn study-nav-btn" id="nav-study">🎓 Get Ready for Study</button>
+        <button class="nav-btn" id="nav-topics">📚 Topic Q&As</button>
+        <button class="nav-btn" id="nav-career">💼 Career Hub</button>
+      </nav>
+
+      <!-- Global Search Bar -->
+      <div class="header-search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search-input" placeholder="Search questions, answers, topics..." autocomplete="off" />
+        <button id="search-clear-btn" class="search-clear hidden" title="Clear search">✕</button>
+      </div>
+
+      <!-- User Auth Section -->
+      <div class="header-auth" id="header-auth">
+        <button class="btn-login" id="btn-open-login">👤 Log In</button>
+        <div class="user-profile-menu hidden" id="user-profile-menu">
+          <div class="user-avatar" id="user-avatar-badge">👨‍💻</div>
+          <span class="user-name" id="user-display-name">Candidate</span>
+          <button class="btn-logout" id="btn-logout" title="Log Out">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB / BACK TO HOME BAR (Visible on sub-views) -->
+  <div class="breadcrumb-bar hidden" id="breadcrumb-bar">
+    <div class="breadcrumb-container">
+      <button class="btn-back-home" id="btn-back-home">
+        <span>←</span> <span>Back to Home</span>
+      </button>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current" id="breadcrumb-current-view">Topic Q&As</span>
+    </div>
+  </div>
+
+  <!-- VIEW 1: HOME & STUDIO (Question Generator + Practice Mode) -->
+  <main class="main-layout" id="view-home">
+    <!-- Left Configuration Panel -->
+    <aside class="sidebar-card">
+      <h2 class="section-title">⚙️ Configure Session</h2>
+      <form id="generator-form">
+        <!-- Role Selection -->
+        <div class="form-group">
+          <label for="role-select">Target Role</label>
+          <select id="role-select" class="form-control">
+            <option value="Full Stack / Web Developer">Full Stack / Web Developer</option>
+            <option value="Python Developer">Python Developer</option>
+            <option value="AI / ML Engineer">AI / Machine Learning Engineer</option>
+            <option value="Web Accessibility Engineer">Web Accessibility Engineer</option>
+            <option value="Frontend Engineer">Frontend Engineer</option>
+            <option value="Backend Engineer">Backend Engineer</option>
+            <option value="QA / Test Automation Engineer">QA / Test Automation Engineer</option>
+            <option value="General Engineering / Software Engineer">General Software Engineer</option>
+            <option value="custom">✏️ Custom Role (Enter below)...</option>
+          </select>
+          <input type="text" id="custom-role-input" class="form-control hidden" placeholder="e.g., DevOps Engineer, Data Platform Lead" />
+        </div>
+
+        <!-- Experience Level -->
+        <div class="form-group">
+          <label for="experience-select">Experience Level</label>
+          <select id="experience-select" class="form-control">
+            <option value="entry">🎓 Fresh Graduate / Entry-Level (0–1 YOE)</option>
+            <option value="junior">🚀 Junior Engineer (1–3 YOE)</option>
+            <option value="mid">⚙️ Mid-Level Engineer (3–5 YOE)</option>
+            <option value="senior">🏛️ Senior / Lead Engineer (5+ YOE)</option>
+          </select>
+        </div>
+
+        <!-- Question Category -->
+        <div class="form-group">
+          <label for="category-select">Question Track / Category</label>
+          <select id="category-select" class="form-control">
+            <option value="all">🎯 Mixed Mock Interview (Recommended)</option>
+            <option value="technical">💻 Technical & Core Fundamentals</option>
+            <option value="behavioral">🧠 Behavioral & STAR Scenarios</option>
+            <option value="system-design">📐 System Design & Architecture</option>
+            <option value="scenario">⚡ Live Problem Solving Scenarios</option>
+          </select>
+        </div>
+
+        <!-- Difficulty -->
+        <div class="form-group">
+          <label for="difficulty-select">Difficulty</label>
+          <select id="difficulty-select" class="form-control">
+            <option value="all">All Difficulties</option>
+            <option value="easy">Foundational (Easy)</option>
+            <option value="medium" selected>Standard (Medium)</option>
+            <option value="hard">Advanced / Challenging (Hard)</option>
+          </select>
+        </div>
+
+        <!-- Count -->
+        <div class="form-group">
+          <label for="count-select">Number of Questions</label>
+          <select id="count-select" class="form-control">
+            <option value="3">3 Focused Questions (Quick Prep)</option>
+            <option value="5" selected>5 Standard Questions</option>
+            <option value="10">10 Full Mock Interview Questions</option>
+          </select>
+        </div>
+
+        <!-- Optional Job Description Collapsible -->
+        <div class="form-group">
+          <details class="jd-details">
+            <summary class="jd-summary">📋 Paste Job Description (Optional context)</summary>
+            <textarea id="jd-input" class="form-control jd-textarea" rows="4" placeholder="Paste the job posting text or key requirements here to synthesize bespoke, role-specific questions..."></textarea>
+          </details>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="generate-btn" class="btn-primary">
+          <span class="btn-text">Generate Questions</span>
+          <span class="btn-spinner hidden"></span>
+        </button>
+      </form>
+    </aside>
+
+    <!-- Right Results Section -->
+    <section class="content-panel">
+      <!-- Quick Topic Explorer Bar -->
+      <div class="quick-topics-bar">
+        <span class="quick-topics-label">⚡ Jump directly to topic questions:</span>
+        <div class="quick-topics-pills">
+          <button class="q-pill" data-topic="javascript">JavaScript</button>
+          <button class="q-pill" data-topic="python">Python</button>
+          <button class="q-pill" data-topic="ml-ai">Machine Learning</button>
+          <button class="q-pill" data-topic="sql-databases">SQL & DB</button>
+          <button class="q-pill" data-topic="system-design">System Design</button>
+          <button class="q-pill" data-topic="accessibility">Accessibility</button>
+          <button class="q-pill" data-topic="behavioral">Behavioral STAR</button>
+        </div>
+      </div>
+
+      <!-- Results Toolbar -->
+      <div class="results-header hidden" id="results-header">
+        <div>
+          <h2 class="results-title" id="results-title">Generated Questions</h2>
+          <p class="results-meta" id="results-meta">Select a question to inspect intent, answer blueprint, and practice live.</p>
+        </div>
+        <div class="results-actions">
+          <button id="btn-export-md" class="btn-secondary" title="Export as Markdown">📥 Markdown</button>
+          <button id="btn-copy-all" class="btn-secondary" title="Copy to Clipboard">📋 Copy All</button>
+          <button id="btn-print" class="btn-secondary" title="Print / PDF">🖨️ Print / PDF</button>
+        </div>
+      </div>
+
+      <!-- Welcome Card -->
+      <div class="welcome-card" id="welcome-card">
+        <div class="welcome-icon">🎯</div>
+        <h3>Welcome to InterviewIQ Studio</h3>
+        <p>Prepare thoroughly for technical, behavioral, and architecture interviews. Choose your role and experience level on the left to generate customized questions complete with interviewer intent, answer blueprints, and live answer grading.</p>
+        <div class="feature-pills">
+          <span class="pill">🔍 Secret Interviewer Intent</span>
+          <span class="pill">📐 STAR Method Blueprint</span>
+          <span class="pill">🔄 Likely Follow-Up Probes</span>
+          <span class="pill">📝 Interactive Answer Scoring</span>
+        </div>
+      </div>
+
+      <!-- Question List Container -->
+      <div id="questions-container" class="questions-list"></div>
+    </section>
+  </main>
+
+  <!-- VIEW: GET READY FOR STUDY -->
+  <section class="study-view-layout hidden" id="view-study">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title">🎓 Get Ready for Study — Interview Prep Crash Course</h2>
+        <p class="view-subtitle">Structured 7-day study plan, high-yield concept flashcards, and pre-interview checklists to crack your target role.</p>
+      </div>
+    </div>
+
+    <!-- 7-Day Sprint Schedule -->
+    <div class="study-schedule-card">
+      <h3 class="study-card-title">📅 7-Day High-Impact Study Schedule</h3>
+      <div class="schedule-grid">
+        <div class="day-card">
+          <div class="day-badge">Day 1 & 2</div>
+          <h4>Core Language Mastery</h4>
+          <p>Deep dive into JavaScript event loops, microtasks vs macrotasks, closures, or Python memory, GIL, and generators.</p>
+          <span class="day-tag">3–4 hours</span>
+        </div>
+        <div class="day-card">
+          <div class="day-badge">Day 3 & 4</div>
+          <h4>Databases & Optimization</h4>
+          <p>Master ACID transactions, B-Tree indexes, MySQL locks, normalization, and handling concurrent requests.</p>
+          <span class="day-tag">3 hours</span>
+        </div>
+        <div class="day-card">
+          <div class="day-badge">Day 5</div>
+          <h4>System Design & APIs</h4>
+          <p>Practice designing scalable RESTful APIs, Redis caching layers, token bucket rate limiting, and JWT auth.</p>
+          <span class="day-tag">4 hours</span>
+        </div>
+        <div class="day-card">
+          <div class="day-badge">Day 6</div>
+          <h4>Domain Specialization</h4>
+          <p>Focus on your target track: Scikit-learn NLP models, Web Accessibility (WCAG/ARIA), or full-stack integrations.</p>
+          <span class="day-tag">3 hours</span>
+        </div>
+        <div class="day-card">
+          <div class="day-badge">Day 7</div>
+          <h4>STAR Behavioral & Mock Exam</h4>
+          <p>Rehearse 4-5 STAR+R project stories aloud and run full mock interviews with instant grading in the Studio.</p>
+          <span class="day-tag">Full Mock</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Recall Flashcards -->
+    <div class="flashcards-section">
+      <h3 class="study-card-title">⚡ Interactive Concept Flashcards (Click any card to flip & reveal answer)</h3>
+      <div class="flashcards-grid">
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="fc-tag">JavaScript</span>
+              <h4>Microtask vs Macrotask</h4>
+              <p class="fc-hint">Click card to reveal answer...</p>
+            </div>
+            <div class="card-back">
+              <p><strong>Microtasks:</strong> Promise callbacks (.then), queueMicrotask. Drains completely before the next macrotask!</p>
+              <p><strong>Macrotasks:</strong> setTimeout, setInterval, I/O. Executed one per loop cycle.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="fc-tag">Python</span>
+              <h4>CPython GIL</h4>
+              <p class="fc-hint">Click card to reveal answer...</p>
+            </div>
+            <div class="card-back">
+              <p><strong>GIL:</strong> Mutex preventing multiple threads from executing bytecode simultaneously, protecting reference counters.</p>
+              <p>Use <em>multiprocessing</em> for CPU-bound tasks and <em>asyncio</em> for I/O tasks.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="fc-tag">Databases</span>
+              <h4>ACID Properties</h4>
+              <p class="fc-hint">Click card to reveal answer...</p>
+            </div>
+            <div class="card-back">
+              <p><strong>A</strong>tomicity (All or nothing)</p>
+              <p><strong>C</strong>onsistency (Integrity rules)</p>
+              <p><strong>I</strong>solation (Concurrency protection)</p>
+              <p><strong>D</strong>urability (Committed data survives crashes via WAL)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="fc-tag">Machine Learning</span>
+              <h4>Overfitting Fixes</h4>
+              <p class="fc-hint">Click card to reveal answer...</p>
+            </div>
+            <div class="card-back">
+              <p>1. L1/L2 Regularization or Dropout</p>
+              <p>2. More training data / Augmentation</p>
+              <p>3. Prune features / Reduce model depth</p>
+              <p>4. Early stopping with Stratified Cross-Validation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="fc-tag">Accessibility</span>
+              <h4>1st Rule of ARIA</h4>
+              <p class="fc-hint">Click card to reveal answer...</p>
+            </div>
+            <div class="card-back">
+              <p><em>"Do not use ARIA if a native HTML element exists."</em></p>
+              <p>Use native <code>&lt;button&gt;</code> over <code>&lt;div role="button"&gt;</code> because native elements carry free keyboard & screen reader support.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="fc-tag">Behavioral</span>
+              <h4>The STAR+R Formula</h4>
+              <p class="fc-hint">Click card to reveal answer...</p>
+            </div>
+            <div class="card-back">
+              <p><strong>S:</strong> Situation (Context & constraint)</p>
+              <p><strong>T:</strong> Task (Your goal)</p>
+              <p><strong>A:</strong> Action (Specific "I" steps)</p>
+              <p><strong>R:</strong> Result (Quantified outcome)</p>
+              <p><strong>+R:</strong> Reflection (Lesson learned)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 2: TOPIC QUESTIONS & ANSWERS LIBRARY -->
+  <section class="topic-library-layout hidden" id="view-topics">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title">📚 Topic Questions & Answers Library</h2>
+        <p class="view-subtitle">Master in-depth questions and verified model answers organized by engineering topic.</p>
+      </div>
+      <div class="topic-filter-chips" id="topic-chips-container">
+        <!-- Topic chips dynamically injected -->
+      </div>
+    </div>
+
+    <!-- Active Topic Container -->
+    <div class="active-topic-info" id="active-topic-banner">
+      <h3 id="active-topic-title">⚡ All Topics</h3>
+      <p id="active-topic-desc">Showing all foundational and advanced questions with complete model answers.</p>
+    </div>
+
+    <!-- Topic Questions List -->
+    <div id="topic-questions-container" class="questions-list"></div>
+  </section>
+
+  <!-- VIEW 3: CAREER HUB -->
+  <section class="career-hub-layout hidden" id="view-career">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title">💼 Career Hub & Engineering Roadmaps</h2>
+        <p class="view-subtitle">Strategic career milestones, technical skill ladders, and verified compensation benchmarks for top engineering roles.</p>
+      </div>
+    </div>
+
+    <!-- Career Cards Grid -->
+    <div class="career-grid" id="career-cards-container">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Career Tips Card -->
+    <div class="career-tips-card">
+      <h3>🚀 4 Principles to Ace Big Tech & Startup Interviews</h3>
+      <div class="tips-grid">
+        <div class="tip-box">
+          <strong>1. Structure Over Speed:</strong>
+          <p>Never rush into an answer immediately. Take 5–10 seconds to outline your thoughts. State your main thesis first, then elaborate with technical mechanisms.</p>
+        </div>
+        <div class="tip-box">
+          <strong>2. The STAR+R Framework:</strong>
+          <p>For behavioral questions, always anchor with Situation, Task, Action, Result, and <em>Reflection</em> (what you learned or would do differently).</p>
+        </div>
+        <div class="tip-box">
+          <strong>3. Concrete Metrics Win:</strong>
+          <p>Instead of saying "I optimized the database", say "I added indexes and connection pooling, reducing query response times by 40% under peak load".</p>
+        </div>
+        <div class="tip-box">
+          <strong>4. Ask Strategic Questions:</strong>
+          <p>When the interviewer asks "Do you have any questions for us?", ask about engineering trade-offs, deployment frequencies, and technical debt priorities.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 4: SEARCH RESULTS VIEW -->
+  <section class="search-view-layout hidden" id="view-search">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title" id="search-results-heading">🔍 Search Results</h2>
+        <p class="view-subtitle" id="search-results-subheading">Found matching questions across topics and answers.</p>
+      </div>
+    </div>
+
+    <div id="search-results-container" class="questions-list"></div>
+  </section>
+
+  <!-- LOGIN / AUTH MODAL -->
+  <div class="modal-overlay hidden" id="login-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="modal-close-btn" title="Close">✕</button>
+      <div class="modal-header">
+        <div class="modal-brand-icon">⚡</div>
+        <h3 class="modal-title">Welcome to InterviewIQ</h3>
+        <p class="modal-subtitle">Sign in to save your practice sessions and track your interview readiness.</p>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-signin">Sign In</button>
+        <button class="modal-tab" id="tab-signup">Create Account</button>
+      </div>
+
+      <form id="auth-form" class="modal-form">
+        <div class="form-group hidden" id="group-name">
+          <label for="auth-name">Full Name</label>
+          <input type="text" id="auth-name" class="form-control" placeholder="e.g. Yelty Vardhan Reddy" />
+        </div>
+
+        <div class="form-group">
+          <label for="auth-email">Email Address</label>
+          <input type="email" id="auth-email" class="form-control" placeholder="name@example.com" required />
+        </div>
+
+        <div class="form-group">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" class="form-control" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-auth-submit">
+          Sign In
+        </button>
+
+        <div class="modal-divider"><span>OR</span></div>
+
+        <!-- Quick 1-Click Demo Login -->
+        <button type="button" class="btn-demo-login" id="btn-demo-login">
+          ⚡ Instant Demo Login (Yelty Vardhan Reddy)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>InterviewIQ Platform &copy; 2026 — Built for high-impact interview preparation. Full-Stack Architecture with Topic Q&As, Career Roadmaps, and Live Answer Grading.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewIQ — Full-Stack Project Documentation & Architecture</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm 16mm 16mm 16mm;
+    }
+    :root {
+      --primary: #4338ca;
+      --primary-light: #e0e7ff;
+      --secondary: #0891b2;
+      --secondary-light: #cffafe;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --bg-alt: #f8fafc;
+      --success: #059669;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.55;
+      background: #ffffff;
+      font-size: 10pt;
+    }
+    .cover-page {
+      padding-top: 30px;
+      padding-bottom: 30px;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 24px;
+    }
+    .project-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 8.5pt;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    h1.project-title {
+      font-size: 24pt;
+      font-weight: 800;
+      color: #1e1b4b;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    p.project-subtitle {
+      font-size: 12pt;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      background: var(--bg-alt);
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .meta-item strong {
+      display: block;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .meta-item span {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    
+    h2 {
+      font-size: 14pt;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--primary);
+      padding-left: 8px;
+    }
+    h3 {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #312e81;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+    p {
+      margin-bottom: 8px;
+      color: #334155;
+    }
+    ul, ol {
+      margin-left: 18px;
+      margin-bottom: 12px;
+      color: #334155;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px;
+      font-size: 9pt;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      text-align: left;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .callout {
+      background: #f0fdf4;
+      border-left: 4px solid var(--success);
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin: 12px 0;
+      font-size: 9pt;
+    }
+    .callout-blue {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: #f1f5f9;
+      color: #b91c1c;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 8.5pt;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 8pt;
+      line-height: 1.4;
+      overflow-x: auto;
+      margin: 10px 0 14px;
+    }
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+    }
+
+    .diagram-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      font-family: 'Consolas', monospace;
+      font-size: 8.5pt;
+      line-height: 1.35;
+      white-space: pre;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 8pt;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover / Header -->
+  <div class="cover-page">
+    <div class="project-badge">Comprehensive Full-Stack Project</div>
+    <h1 class="project-title">InterviewIQ Platform</h1>
+    <p class="project-subtitle">Interview Question Generator, Topic Q&A Knowledge Base, Career Hub & Real-time Grader</p>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Author & Developer</strong>
+        <span>Yelty Vardhan Reddy</span>
+      </div>
+      <div class="meta-item">
+        <strong>Architecture</strong>
+        <span>Full-Stack (Node/Express + SPA)</span>
+      </div>
+      <div class="meta-item">
+        <strong>Key Tools Included</strong>
+        <span>Home, Study Mode, Login, Career, Search, Q&A</span>
+      </div>
+      <div class="meta-item">
+        <strong>Date & Status</strong>
+        <span>September 2026 | Production-Ready</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 1: Executive Summary -->
+  <h2>1. Project Overview & Core Requirements</h2>
+  <p>
+    <strong>InterviewIQ</strong> is a full-featured career preparation web platform built for aspiring and junior-to-mid software engineers. It integrates six foundational tools into a single, cohesive user experience:
+  </p>
+  <ul>
+    <li><strong>🏠 Back to Home Navigation:</strong> Universal breadcrumbs and return-to-home controllers from every sub-view, ensuring users never feel disoriented while navigating.</li>
+    <li><strong>🎓 Get Ready for Study (Study Mode):</strong> Accelerated 7-day interview sprint schedule, interactive flip flashcards for rapid technical recall, and daily readiness checklist. Accessible via direct deep-link <code>#get-ready-for-study</code>.</li>
+    <li><strong>👤 User Authentication & Profiles (Log In / Sign Up):</strong> Local session persistence, user avatars, 1-click instant demo login, and candidate profile management.</li>
+    <li><strong>💼 Career Hub & Engineering Roadmaps:</strong> Structured progression ladders for Full Stack, Python, AI/ML, and Web Accessibility engineers, complete with verified salary benchmarks and milestones.</li>
+    <li><strong>🔍 Instant Global Search Engine:</strong> Debounced real-time search across all questions, model answers, tags, and technical concepts.</li>
+    <li><strong>📚 Topic-Specific Questions & Answers:</strong> Dedicated library allowing candidates to study verified model answers, interviewer intent, and STAR blueprints by specific topic (JavaScript, Python, ML/NLP, SQL & Databases, System Design, Accessibility, Behavioral).</li>
+  </ul>
+
+  <!-- Section 2: Full System Architecture -->
+  <h2>2. System Architecture & High-Level Design</h2>
+  <div class="diagram-box">
++-----------------------------------------------------------------------------------------+
+|                                CLIENT-SIDE (FRONT-END)                                  |
+|                                                                                         |
+|  +---------------------+  +---------------------+  +------------------+  +-----------+  |
+|  | 🏠 Home & Generator |  | 📚 Topic Q&A Library|  | 💼 Career Hub    |  | 👤 Auth   |  |
+|  | - Role & Seniority  |  | - Topic Filtering   |  | - Roadmaps       |  | - Log In  |  |
+|  | - JD Synthesizer    |  | - Model Answers     |  | - Salary Bands   |  | - Profile |  |
+|  +---------------------+  +---------------------+  +------------------+  +-----------+  |
+|            |                         |                       |                 |        |
+|            +-------------------------+-----------------------+-----------------+        |
+|                                      |                                                  |
+|                   🔍 Global Instant Search Bar & Navigation Controller                  |
++--------------------------------------+--------------------------------------------------+
+                                       |  JSON over HTTP (REST API)
+                                       v
++-----------------------------------------------------------------------------------------+
+|                                SERVER-SIDE (BACK-END)                                   |
+|                                                                                         |
+|  +-----------------------------------------------------------------------------------+  |
+|  | Express.js Application Server (Port 3000)                                         |  |
+|  | - Static Asset Streaming (HTML/CSS/JS)                                            |  |
+|  | - CORS, JSON Body Parsing, Routing Middleware                                     |  |
+|  +-----------------------------------------------------------------------------------+  |
+|                                       |                                                 |
+|    +--------------------+-------------+--------------------+-----------------------+    |
+|    |                    |                                  |                       |    |
+|    v                    v                                  v                       v    |
+| +-----------------+  +-----------------------+  +---------------------+  +------------+ |
+| | Question Bank   |  | Question Generator    |  | Answer Evaluator    |  | Auth &     | |
+| | - 8 Core Topics |  | - JD Tokenizer        |  | - STAR Rubric       |  | Career Hub | |
+| | - Model Answers |  | - Heuristic Synthesis |  | - Metrics & Fluff   |  | Services   | |
+| +-----------------+  +-----------------------+  +---------------------+  +------------+ |
++-----------------------------------------------------------------------------------------+
+  </div>
+
+  <!-- Page Break -->
+  <div class="page-break"></div>
+
+  <!-- Section 3: Detailed Breakdown of the 5 Core Tools -->
+  <h2>3. Detailed Breakdown of the Core Tools</h2>
+
+  <h3>Tool 1: Back to Home Navigation & Breadcrumbs</h3>
+  <p>
+    Navigation consistency is maintained across the entire Single Page Application (SPA). A persistent top-bar brand link, an explicit <code>🏠 Home</code> navigation button, and a dynamic <code>← Back to Home</code> breadcrumb bar allow candidates to navigate deep into topic Q&As or career roadmaps and return home with a single click without page reloads.
+  </p>
+
+  <h3>Tool 2: User Authentication & Profile (Log In / Sign Up)</h3>
+  <p>
+    The authentication subsystem includes:
+  </p>
+  <ul>
+    <li><strong>Modal Authentication Dialog:</strong> Supports switching between <em>Sign In</em> and <em>Create Account</em>.</li>
+    <li><strong>1-Click Instant Demo Login:</strong> Allows users and interviewers to immediately log in as <em>Yelty Vardhan Reddy</em> without typing credentials.</li>
+    <li><strong>Session Persistence:</strong> User profile state is stored in <code>localStorage</code>, maintaining authenticated state across browser refreshes with avatar badges and a clean <em>Sign Out</em> workflow.</li>
+  </ul>
+
+  <h3>Tool 3: Career Hub & Engineering Roadmaps</h3>
+  <p>
+    A dedicated career intelligence center mapping verified market benchmarks:
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Role Track</th>
+        <th>Verified Compensation Range</th>
+        <th>Core Competencies Required</th>
+        <th>Key Interview Focus</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Full Stack / Web Developer</strong></td>
+        <td>₹6L – ₹18L PA (India) / $85k – $140k (Global)</td>
+        <td>HTML5, CSS3, JS/TS, Node.js, MySQL, REST, Caching</td>
+        <td>Event loop, closures, async/await, ACID transactions, and system design.</td>
+      </tr>
+      <tr>
+        <td><strong>Python / Backend Engineer</strong></td>
+        <td>₹6L – ₹22L PA (India) / $90k – $150k (Global)</td>
+        <td>Python 3.x, FastAPI/Django, Concurrency, Docker, SQL</td>
+        <td>CPython GIL, memory profiling, streaming large datasets, and decorators.</td>
+      </tr>
+      <tr>
+        <td><strong>AI / Machine Learning Engineer</strong></td>
+        <td>₹8L – ₹28L PA (India) / $110k – $180k (Global)</td>
+        <td>Python, Scikit-learn, PyTorch, NLP, Pandas, MLOps</td>
+        <td>Bias-variance tradeoff, precision/recall, TF-IDF vs embeddings, and latency.</td>
+      </tr>
+      <tr>
+        <td><strong>Web Accessibility (a11y) Engineer</strong></td>
+        <td>₹12L – ₹30L+ PA (Apple, Microsoft ICT2/L4)</td>
+        <td>WCAG 2.1/2.2, WAI-ARIA, VoiceOver/NVDA, Semantic DOM</td>
+        <td>First rule of ARIA, focus trapping, modal dialogs, and screen reader trees.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Tool 4: Instant Global Search Engine</h3>
+  <p>
+    A debounced, real-time search bar embedded directly in the header. As the candidate types, the client queries <code>/api/search?q=...</code> which searches across question titles, comprehensive model answers, interviewer intents, and skill tags. Results display with matched tags and instant answer reveal accordions.
+  </p>
+
+  <h3>Tool 5: Topic-Specific Questions & Answers Library</h3>
+  <p>
+    Organized into 8 distinct topic modules (<code>JavaScript & Web</code>, <code>Python Core</code>, <code>Machine Learning & NLP</code>, <code>Databases & SQL</code>, <code>System Design</code>, <code>Web Accessibility</code>, <code>Behavioral STAR</code>).
+    Each topic card provides:
+  </p>
+  <ol>
+    <li><strong>The Exact Question:</strong> Real-world scenario or technical concept.</li>
+    <li><strong>📖 Comprehensive Model Answer:</strong> Full, verified answer explanation covering mechanics, diagrams, and code snippets.</li>
+    <li><strong>💡 Why the Interviewer Asks This:</strong> What underlying skill or red flag the interviewer is grading.</li>
+    <li><strong>🎯 Answer Blueprint:</strong> Recommended talking points and structured STAR approach.</li>
+    <li><strong>🔄 Likely Follow-Up Probes:</strong> 2–3 follow-up questions to prepare for deeper rounds.</li>
+    <li><strong>🎙️ Practice & Real-Time Grading:</strong> Live textarea allowing the candidate to test themselves, receiving a score out of 10 with actionable feedback.</li>
+  </ol>
+
+  <h3>Tool 6: Get Ready for Study Mode (7-Day Sprint & Interactive Flashcards)</h3>
+  <p>
+    An accelerated revision and retention center designed for high-stress interview preparation:
+  </p>
+  <ul>
+    <li><strong>7-Day Focused Sprint Schedule:</strong> Day-by-day structured curriculum covering Fundamentals, Data Structures & Concurrency, Frameworks & APIs, Database Architecture, System Design & Accessibility, Behavioral STAR Drills, and Mock Interview Dress Rehearsals.</li>
+    <li><strong>Interactive Flip Concept Flashcards:</strong> 3D CSS flip-cards for rapid self-testing on core concepts (e.g., CPython GIL, Event Loop, First Rule of ARIA, Index B-Trees, Precision vs Recall). Candidates click to reveal verified answer summaries.</li>
+    <li><strong>Daily Readiness Checklist:</strong> Interactive checkboxes allowing candidates to track syllabus completion and track daily confidence.</li>
+    <li><strong>Deep-Linking Architecture:</strong> The study view is directly linkable via <code>#get-ready-for-study</code>, allowing teachers, mentors, or peers to share the study hub directly.</li>
+  </ul>
+
+  <!-- Page Break -->
+  <div class="page-break"></div>
+
+  <!-- Section 4: REST API Specification -->
+  <h2>4. REST API Specification</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Method & Endpoint</th>
+        <th>Purpose & Parameters</th>
+        <th>Example Response</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>GET /api/topics</code></td>
+        <td>Lists all available topics with question counts.</td>
+        <td><code>{"success": true, "topics": [{"id": "python", "questionCount": 3}]}</code></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/topics/:id</code></td>
+        <td>Fetches all questions and model answers for a specific topic.</td>
+        <td><code>{"success": true, "topic": {...}, "questions": [...]}</code></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/search?q=...</code></td>
+        <td>Searches across questions, model answers, and tags.</td>
+        <td><code>{"success": true, "count": 2, "results": [...]}</code></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/career/roadmaps</code></td>
+        <td>Returns role roadmaps, milestones, and salary benchmarks.</td>
+        <td><code>{"success": true, "roadmaps": [...]}</code></td>
+      </tr>
+      <tr>
+        <td><code>POST /api/auth/login</code></td>
+        <td>Authenticates user or creates demo session.</td>
+        <td><code>{"success": true, "user": {"name": "Yelty Vardhan Reddy", ...}}</code></td>
+      </tr>
+      <tr>
+        <td><code>POST /api/generate</code></td>
+        <td>Generates tailored questions based on role, level, and JD text.</td>
+        <td><code>{"success": true, "meta": {...}, "questions": [...]}</code></td>
+      </tr>
+      <tr>
+        <td><code>POST /api/evaluate</code></td>
+        <td>Grades candidate practice answer (1–10) with rubric feedback.</td>
+        <td><code>{"success": true, "evaluation": {"score": 8, "verdict": "..."}}</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Section 5: Step-by-Step Running Guide & Live Links -->
+  <h2>5. Live Shareable Links & Deployment</h2>
+
+  <div class="callout callout-blue">
+    <strong>🌐 Public Shareable URLs (Active Live):</strong>
+    <ul style="margin-top: 6px;">
+      <li><strong>Direct "Get Ready for Study" Link:</strong> <a href="https://0b8a491af6c43422-49-43-233-135.serveousercontent.com/#get-ready-for-study" target="_blank">https://0b8a491af6c43422-49-43-233-135.serveousercontent.com/#get-ready-for-study</a></li>
+      <li><strong>Full Application Main Portal:</strong> <a href="https://0b8a491af6c43422-49-43-233-135.serveousercontent.com" target="_blank">https://0b8a491af6c43422-49-43-233-135.serveousercontent.com</a></li>
+      <li><strong>Local Development Link:</strong> <code>http://localhost:3000/#get-ready-for-study</code></li>
+    </ul>
+  </div>
+
+  <h3>How to Run Locally</h3>
+  <pre><code>cd interview-question-generator
+npm start
+# Output:
+# ===================================================
+# 🚀 Interview Question Generator Server Running!
+# 📡 Local URL: http://localhost:3000
+# 📁 Frontend: Serving from ./public
+# ===================================================</code></pre>
+
+  <div class="footer">
+    InterviewIQ Documentation &copy; 2026 Yelty Vardhan Reddy. All rights reserved.
+  </div>
+
+</body>
+</html>
