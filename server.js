@@ -36,9 +36,10 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`===================================================`);
-    console.log(`🚀 Interview Question Generator Server Running!`);
-    console.log(`📡 Local URL: http://localhost:${PORT}`);
-    console.log(`📁 Frontend: Serving from ./public`);
+    console.log(`🚀 Get Ready for Study Platform Running!`);
+    console.log(`📡 Local Host: http://getreadyforstudy:${PORT}`);
+    console.log(`🌐 Localhost:  http://localhost:${PORT}`);
+    console.log(`📁 Frontend:   Serving from ./public`);
     console.log(`===================================================`);
   });
 }
