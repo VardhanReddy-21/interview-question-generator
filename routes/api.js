@@ -98,12 +98,66 @@ router.get('/topics/:topicId', (req, res) => {
   });
 });
 
-// GET /api/search - Live search across questions, answers, tags, and topics
-router.get('/search', (req, res) => {
-  const query = (req.query.q || '').trim().toLowerCase();
-  const topicFilter = (req.query.topic || '').trim().toLowerCase();
+// Canonical topic mapping with exact aliases for language-isolated search
+const TOPIC_ALIASES = {
+  'c': 'c',
+  'c lang': 'c',
+  'c language': 'c',
+  'c programming': 'c',
+  'cpp': 'cpp',
+  'c++': 'cpp',
+  'c plus plus': 'cpp',
+  'python': 'python',
+  'py': 'python',
+  'python3': 'python',
+  'java': 'java',
+  'core java': 'java',
+  'sql': 'sql',
+  'rdbms': 'sql',
+  'mysql': 'mysql',
+  'html': 'html',
+  'html5': 'html',
+  'css': 'css',
+  'css3': 'css',
+  'javascript': 'javascript',
+  'js': 'javascript',
+  'ecmascript': 'javascript',
+  'nodejs': 'nodejs',
+  'node': 'nodejs',
+  'node.js': 'nodejs',
+  'react': 'react',
+  'reactjs': 'react',
+  'react.js': 'react',
+  'ds': 'ds',
+  'dsa': 'ds',
+  'data structures': 'ds',
+  'algorithms': 'ds',
+  'data structure': 'ds'
+};
 
-  if (!query && (!topicFilter || topicFilter === 'all')) {
+const TOPIC_DISPLAY_NAMES = {
+  'c': 'C Programming',
+  'cpp': 'C++',
+  'python': 'Python',
+  'java': 'Java',
+  'sql': 'SQL',
+  'mysql': 'MySQL',
+  'html': 'HTML5',
+  'css': 'CSS3',
+  'javascript': 'JavaScript',
+  'nodejs': 'Node.js',
+  'react': 'React',
+  'ds': 'Data Structures & Algorithms'
+};
+
+// GET /api/search - Live search with strict language isolation & deep topic filtering
+router.get('/search', (req, res) => {
+  const rawQuery = (req.query.q || '').trim();
+  const rawTopic = (req.query.topic || '').trim().toLowerCase();
+  const queryLower = rawQuery.toLowerCase();
+
+  // 1. Empty query & all topics -> return full collection
+  if (!rawQuery && (!rawTopic || rawTopic === 'all')) {
     return res.json({
       success: true,
       query: "",
@@ -112,35 +166,88 @@ router.get('/search', (req, res) => {
     });
   }
 
+  // 2. Determine target language / topic isolation
+  let detectedTopic = null;
+  let searchKeyword = queryLower;
+
+  // Check if topic dropdown is selected
+  if (rawTopic && rawTopic !== 'all' && TOPIC_DISPLAY_NAMES[rawTopic]) {
+    detectedTopic = rawTopic;
+  }
+
+  // Check if query is an exact language alias (e.g. "c", "python", "java", "sql", "react", "c++")
+  if (TOPIC_ALIASES[queryLower]) {
+    detectedTopic = TOPIC_ALIASES[queryLower];
+    searchKeyword = ''; // User wants ALL questions for this specific language only!
+  } else {
+    // Check if query starts with language alias + space (e.g. "java threads", "python decorators", "react hooks")
+    const sortedAliases = Object.keys(TOPIC_ALIASES).sort((a, b) => b.length - a.length);
+    for (const alias of sortedAliases) {
+      if (queryLower.startsWith(alias + ' ')) {
+        detectedTopic = TOPIC_ALIASES[alias];
+        searchKeyword = queryLower.slice(alias.length).trim();
+        break;
+      }
+    }
+  }
+
+  // Helper regex for safe word matching (prevents "c" or "js" from matching inside other words)
+  const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let keywordRegex = null;
+  if (searchKeyword && searchKeyword.length > 0) {
+    if (searchKeyword.length <= 2) {
+      keywordRegex = new RegExp(`(^|[^a-zA-Z0-9_#+])` + escapeRegex(searchKeyword) + `($|[^a-zA-Z0-9_#+])`, 'i');
+    } else {
+      keywordRegex = new RegExp(escapeRegex(searchKeyword), 'i');
+    }
+  }
+
+  // 3. Filter with strict topic exclusivity
   const matched = QUESTION_BANK.filter(q => {
-    if (topicFilter && topicFilter !== 'all' && q.topic !== topicFilter) {
+    // If a language is targeted, ONLY return questions belonging to that language
+    if (detectedTopic && q.topic !== detectedTopic) {
       return false;
     }
 
-    if (!query) return true;
+    // If searching all questions for that language without extra keywords
+    if (!searchKeyword || searchKeyword.length === 0) {
+      return true;
+    }
 
-    const qText = (q.question || '').toLowerCase();
-    const aText = (q.modelAnswer || '').toLowerCase();
-    const blueprintText = (q.answerBlueprint || '').toLowerCase();
-    const intentText = (q.interviewerIntent || '').toLowerCase();
-    const tagsText = (q.tags || []).join(' ').toLowerCase();
-    const topicText = (q.topicName || '').toLowerCase();
-    const codeText = (q.codeSnippet || '').toLowerCase();
+    const qText = q.question || '';
+    const aText = q.modelAnswer || '';
+    const blueprintText = q.answerBlueprint || '';
+    const intentText = q.interviewerIntent || '';
+    const tagsText = (q.tags || []).join(' ');
+    const topicText = q.topicName || '';
+    const codeText = q.codeSnippet || '';
+
+    if (keywordRegex) {
+      return (
+        keywordRegex.test(qText) ||
+        keywordRegex.test(aText) ||
+        keywordRegex.test(blueprintText) ||
+        keywordRegex.test(intentText) ||
+        keywordRegex.test(tagsText) ||
+        keywordRegex.test(topicText) ||
+        keywordRegex.test(codeText)
+      );
+    }
 
     return (
-      qText.includes(query) ||
-      aText.includes(query) ||
-      blueprintText.includes(query) ||
-      intentText.includes(query) ||
-      tagsText.includes(query) ||
-      topicText.includes(query) ||
-      codeText.includes(query)
+      qText.toLowerCase().includes(searchKeyword) ||
+      aText.toLowerCase().includes(searchKeyword) ||
+      tagsText.toLowerCase().includes(searchKeyword)
     );
   });
 
+  const topicName = detectedTopic ? (TOPIC_DISPLAY_NAMES[detectedTopic] || detectedTopic) : null;
+
   res.json({
     success: true,
-    query,
+    query: rawQuery,
+    detectedTopic,
+    topicName,
     count: matched.length,
     results: matched
   });

@@ -1921,54 +1921,49 @@ function shortestPathBFS(graph, startNode, targetNode) {
     id: "cpp-04",
     topic: "cpp",
     topicName: "C++",
-    role: "C++ Systems / Game / Performance Engineer",
+    role: "C++ Systems / Core Engineer",
     category: "technical",
     difficulty: "hard",
     experienceLevel: "senior",
-    question: "What are Move Semantics and Rvalue References (T&&) in C++11, and how does std::move eliminate expensive deep copies?",
-    modelAnswer: `Prior to C++11, passing or returning objects by value always triggered deep copies: allocating new memory on the heap and duplicating element buffers.
+    question: "What is RAII (Resource Acquisition Is Initialization), how does the Rule of 5 (and Rule of 0) guarantee exception safety, and what are C++20 Concepts?",
+    modelAnswer: `**RAII (Resource Acquisition Is Initialization)** is the central design idiom of modern C++:
+- Resources (heap memory, file handles, mutex locks, network sockets) are **acquired in the constructor** and **released in the destructor**.
+- Because destructors are guaranteed to be called during **stack unwinding** when an exception is thrown, RAII completely eliminates manual cleanup and guarantees zero resource leaks.
 
-**Lvalues vs. Rvalues:**
-- **Lvalue (locator value):** An object that occupies an identifiable memory address with a persistent name (e.g. variable \`x\`).
-- **Rvalue:** A temporary, ephemeral value that has no persistent identifier and is destroyed at the end of the expression (e.g. \`x + y\`, literals, temporary objects).
+**The Rule of 5 vs. Rule of 0:**
+- **Rule of 5:** If a class directly manages a raw resource and customizes any of the following 5 special member functions, it should explicitly declare all 5:
+  1. Destructor (\`~T()\`)
+  2. Copy Constructor (\`T(const T&)\`)
+  3. Copy Assignment Operator (\`T& operator=(const T&)\`)
+  4. Move Constructor (\`T(T&&)\`)
+  5. Move Assignment Operator (\`T& operator=(T&&)\`)
+- **Rule of 0:** Design classes using modern RAII wrappers (\`std::unique_ptr\`, \`std::vector\`, \`std::string\`) so the class needs **none** of the 5 custom methods—the compiler-generated defaults handle everything safely.
 
-**Rvalue References (\`T&&\`) & Move Semantics:**
-- C++11 introduced rvalue references denoted by \`T&&\`.
-- Move semantics allow an object to **transfer ownership** of heap-allocated resources from a temporary rvalue to a new object simply by copying raw pointers and nullifying the source's pointer.
-- **std::move:** Does **not** move anything itself! It is simply an unconditional static cast that converts an lvalue into an rvalue reference (\`static_cast<T&&>(var)\`), enabling the move constructor or move assignment operator to be invoked.`,
-    interviewerIntent: "Validates deep mastery of modern C++ resource management, zero-cost abstractions, and high-performance memory ownership transfer.",
-    answerBlueprint: "1) Define lvalues vs rvalues. 2) Explain why deep copying temporaries is inefficient. 3) Detail how move constructor steals raw pointers and zeroes out source. 4) Clarify that std::move is just a cast to rvalue reference.",
-    codeSnippet: `// Custom Dynamic String with Move Semantics
-class DynamicBuffer {
-    char* data;
-    size_t size;
-public:
-    // Move Constructor: Steal buffer pointer in O(1)
-    DynamicBuffer(DynamicBuffer&& other) noexcept 
-        : data(other.data), size(other.size) {
-        other.data = nullptr; // Nullify source to prevent double-free
-        other.size = 0;
-    }
+**C++20 Concepts:**
+Concepts provide compile-time predicates to constrain template parameters, replacing obscure SFINAE / \`std::enable_if\` with readable compiler diagnostics.`,
+    interviewerIntent: "Assesses modern C++ resource management, exception safety guarantees, and contemporary C++20 template constraints.",
+    answerBlueprint: "1) Define RAII and stack unwinding. 2) Detail the Rule of 5 special member functions. 3) Contrast with Rule of 0 using smart pointers. 4) Explain C++20 concepts with a constrained template example.",
+    codeSnippet: `// 1. RAII Lock Guard Example
+void processData(std::mutex& mtx) {
+    std::lock_guard<std::mutex> lock(mtx); // Acquired in constructor
+    // If an exception throws here, lock is ALWAYS released in destructor!
+}
 
-    // Move Assignment Operator
-    DynamicBuffer& operator=(DynamicBuffer&& other) noexcept {
-        if (this != &other) {
-            delete[] data;       // Free existing buffer
-            data = other.data;   // Steal pointer
-            size = other.size;
-            other.data = nullptr;
-            other.size = 0;
-        }
-        return *this;
-    }
-};`,
-    complexity: "Copy: O(N) heap allocation and byte duplication | Move: O(1) pointer reassignment",
-    commonMistakes: "Accessing an object after calling std::move on it (valid but unspecified state); forgetting to mark move constructors noexcept (which prevents std::vector from using move during reallocations).",
+// 2. C++20 Concept Constraining Numeric Types
+template<typename T>
+concept Numeric = std::is_arithmetic_v<T>;
+
+template<Numeric T>
+T calculateAverage(T a, T b) {
+    return (a + b) / 2;
+}`,
+    complexity: "Time: O(1) construction and destruction overhead | Space: Zero overhead abstraction",
+    commonMistakes: "Violating the Rule of 5 by writing a custom destructor that frees memory but forgetting to delete or define the copy constructor, leading to double-free errors.",
     followUpQuestions: [
-      "Why must move constructors and move assignment operators be marked noexcept for std::vector resizing?",
-      "What is Perfect Forwarding and how does std::forward differ from std::move?"
+      "What are the three levels of Exception Safety (Basic, Strong, and No-throw / noexcept)?",
+      "How does copy-and-swap idiom simplify implementing copy and move assignment operators?"
     ],
-    tags: ["C++", "Move Semantics", "Rvalue References", "std::move", "Performance"]
+    tags: ["C++", "RAII", "Rule of 5", "Rule of 0", "Concepts", "Memory Safety"]
   },
   {
     id: "java-04",
@@ -2016,45 +2011,44 @@ long getHits(String endpoint) {
     id: "sql-04",
     topic: "sql",
     topicName: "SQL",
-    role: "Database / Data Platform Engineer",
+    role: "Data Architect / Backend SQL Engineer",
     category: "technical",
-    difficulty: "medium",
-    experienceLevel: "junior",
-    question: "Explain SQL Window Functions: What is the difference between ROW_NUMBER(), RANK(), and DENSE_RANK(), and when would you use them over GROUP BY?",
-    modelAnswer: `**Window Functions** perform calculations across a set of table rows that are related to the current row without collapsing rows into a single summary output (unlike \`GROUP BY\`).
+    difficulty: "hard",
+    experienceLevel: "senior",
+    question: "What are Recursive Common Table Expressions (Recursive CTEs) in SQL, how do they work, and how do you use them to query hierarchical org charts or graph data?",
+    modelAnswer: `A **Recursive Common Table Expression (Recursive CTE)** is an iterative SQL query that references itself to traverse hierarchical, parent-child, or graph-structured relational data (such as organization reporting chains, threaded comment trees, or bill-of-materials).
 
-**Key Distinctions:**
-1. **ROW_NUMBER():** Assigns a unique sequential integer (1, 2, 3...) to each row within the partition regardless of ties.
-2. **RANK():** Assigns the same rank to identical values, but **skips subsequent ranks** according to the number of tied rows (e.g. 1, 2, 2, 4).
-3. **DENSE_RANK():** Assigns the same rank to identical values **without gaps** in ranking numbers (e.g. 1, 2, 2, 3).
-
-**Window Function vs. GROUP BY:**
-- \`GROUP BY\` collapses rows, hiding individual record details.
-- Window functions retain individual row identities while computing running totals, moving averages, or top-N ranks per department.`,
-    interviewerIntent: "Assesses analytical SQL query writing, row partitioning, tie-breaking logic, and reporting optimizations.",
-    answerBlueprint: "Define OVER(PARTITION BY ... ORDER BY ...). Contrast ROW_NUMBER (unique), RANK (gaps on ties), and DENSE_RANK (no gaps). Provide practical Top-N per category query.",
-    codeSnippet: `-- Find the 2nd Highest Salary in each department
-WITH RankedSalaries AS (
-    SELECT 
-        emp_id,
-        department_id,
-        salary,
-        DENSE_RANK() OVER (
-            PARTITION BY department_id 
-            ORDER BY salary DESC
-        ) AS salary_rank
+**Core Structure of a Recursive CTE:**
+1. **Anchor Member:** The base query that executes first to establish the starting result set (e.g. finding the CEO or top-level root nodes where \`manager_id IS NULL\`).
+2. **UNION ALL:** Combines the anchor result with the recursive iterations.
+3. **Recursive Member:** Joins the CTE back to the underlying table on the parent-child relationship (e.g. joining on \`e.manager_id = cte.emp_id\`). It repeats automatically until the join yields an empty set.
+4. **Termination Condition:** Stops when no new rows are produced. Modern SQL engines also provide recursion depth limits (e.g. \`MAXRECURSION\`) to prevent infinite loops from cycles in data.`,
+    interviewerIntent: "Tests advanced SQL data modeling, recursion mechanics, tree traversal in relational engines, and prevention of infinite recursion.",
+    answerBlueprint: "1) Define Recursive CTE and explain why it's needed for trees/hierarchies. 2) Break down the 3 components (Anchor, UNION ALL, Recursive member). 3) Provide clear Org Chart query showing employee hierarchy depth. 4) Discuss cycle detection / MAXRECURSION.",
+    codeSnippet: `-- Org Chart Traversal: Finding All Reports Under CEO with Hierarchy Level
+WITH RECURSIVE OrgHierarchy AS (
+    -- 1. Anchor Member: Top of hierarchy (CEO)
+    SELECT emp_id, name, manager_id, 1 AS depth_level
     FROM employees
+    WHERE manager_id IS NULL
+
+    UNION ALL
+
+    -- 2. Recursive Member: Join next level subordinates
+    SELECT e.emp_id, e.name, e.manager_id, o.depth_level + 1
+    FROM employees e
+    INNER JOIN OrgHierarchy o ON e.manager_id = o.emp_id
 )
-SELECT emp_id, department_id, salary
-FROM RankedSalaries
-WHERE salary_rank = 2;`,
-    complexity: "Time: O(N log N) due to sorting inside partitions | Space: O(N) for window buffer",
-    commonMistakes: "Trying to filter by window function in the WHERE clause directly (must use CTE or subquery because WHERE executes before window evaluation).",
+SELECT emp_id, name, depth_level
+FROM OrgHierarchy
+ORDER BY depth_level, name;`,
+    complexity: "Time: O(V + E) where V = rows in hierarchy, E = relationships | Space: O(depth) recursion stack buffer",
+    commonMistakes: "Using UNION instead of UNION ALL (which incurs expensive duplicate elimination on every recursion step); forgetting cycle guards in cyclic graph data.",
     followUpQuestions: [
-      "In the SQL query lifecycle, where do window functions execute relative to WHERE and HAVING?",
-      "How do LEAD() and LAG() calculate differences between consecutive rows?"
+      "What happens if employee data contains a circular reference (A reports to B, B reports to A) in a Recursive CTE?",
+      "How do you construct breadcrumb paths (e.g. 'CEO > VP > Director > Lead') within a recursive CTE?"
     ],
-    tags: ["SQL", "Window Functions", "DENSE_RANK", "Analytics", "Database"]
+    tags: ["SQL", "Recursive CTE", "Hierarchical Data", "Trees", "Advanced SQL"]
   },
   {
     id: "mysql-04",
@@ -2063,41 +2057,45 @@ WHERE salary_rank = 2;`,
     role: "MySQL / Database Administrator",
     category: "technical",
     difficulty: "hard",
-    experienceLevel: "mid",
-    question: "What is the Leftmost Prefix Rule in MySQL Composite Indexes, and why does a query on (colB, colC) fail to use an index defined on (colA, colB, colC)?",
-    modelAnswer: `In MySQL InnoDB, a **Composite Index (Multi-Column Index)** is stored as a single B-Tree ordered by the concatenated keys from left to right.
+    experienceLevel: "senior",
+    question: "How does MySQL InnoDB implement MVCC (Multi-Version Concurrency Control), Redo Logs (WAL) vs Undo Logs, and how are Deadlocks detected and resolved?",
+    modelAnswer: `InnoDB is an ACID-compliant transactional storage engine powered by three critical architectural subsystems:
 
-**The Leftmost Prefix Rule:**
-MySQL can use a composite index \`INDEX(colA, colB, colC)\` **only if** the query conditions include columns starting from the leftmost column (\`colA\`) continuously:
-- **Can use index:**
-  - \`WHERE colA = 5\` (uses colA)
-  - \`WHERE colA = 5 AND colB = 10\` (uses colA, colB)
-  - \`WHERE colA = 5 AND colB = 10 AND colC = 20\` (uses full index)
-  - \`WHERE colA = 5 AND colC = 20\` (uses only colA, then filters colC via Index Condition Pushdown)
-- **CANNOT use index:**
-  - \`WHERE colB = 10 AND colC = 20\` (does not start with leftmost colA!)
+**1. MVCC (Multi-Version Concurrency Control):**
+- Allows **non-blocking reads**: Readers never block writers, and writers never block readers.
+- When a row is modified, InnoDB doesn't overwrite it in place immediately. Instead, it writes the previous version of the row to the **Undo Log** and updates the hidden \`DB_ROLL_PTR\` (roll pointer) and \`DB_TRX_ID\` (transaction ID) in the clustered index.
+- Readers create a **Read View** at transaction start (under REPEATABLE READ) to see a consistent snapshot by traversing the undo chain.
 
-**Why:**
-Think of a physical telephone directory sorted by (Last Name, First Name). If you only know someone's First Name ("John"), the alphabetical sorting on Last Name is useless; you must scan the entire book.`,
-    interviewerIntent: "Validates practical B-Tree index mechanics, index design, query optimization, and avoiding accidental full-table scans.",
-    answerBlueprint: "Explain B-Tree ordering on multi-column keys. Analogy of telephone book (Last name, First name). Show EXPLAIN output showing type: ALL or index vs ref.",
-    codeSnippet: `-- Composite Index Definition
-CREATE INDEX idx_user_status_created ON orders (tenant_id, status, created_at);
+**2. Redo Log vs. Undo Log:**
+- **Redo Log (Write-Ahead Logging - WAL):** Ensures **Durability (D in ACID)** and crash recovery. Changes are written sequentially to \`ib_logfile\` on disk before dirty buffer pool pages are flushed. If the server loses power, InnoDB replays the redo log upon reboot.
+- **Undo Log:** Ensures **Atomicity (A in ACID)** and rollback capability. If a transaction fails or issues \`ROLLBACK\`, old values are restored from the undo log.
 
--- FAST: Uses B-Tree index range
-EXPLAIN SELECT * FROM orders 
-WHERE tenant_id = 101 AND status = 'COMPLETED' AND created_at >= '2026-01-01';
+**3. Deadlock Detection & Resolution:**
+- Occurs when two transactions hold locks the other needs in a circular wait (e.g. Tx1 locks row A and waits for row B; Tx2 locks row B and waits for row A).
+- InnoDB's background engine runs **Deadlock Detection** via a wait-for graph: it immediately detects the cycle, picks the transaction with the smallest number of inserted/updated rows as the **victim**, rolls it back, and returns error \`1213: Deadlock found when trying to get lock; try restarting transaction\`.`,
+    interviewerIntent: "Assesses enterprise MySQL internals, high-concurrency transaction safety, crash recovery guarantees, and lock contention diagnostics.",
+    answerBlueprint: "1) Explain MVCC and non-blocking reads using Undo Log snapshot chains. 2) Contrast Redo Log (crash durability / WAL) vs Undo Log (rollback / MVCC). 3) Explain deadlock detection with wait-for graph and why the smaller transaction is rolled back.",
+    codeSnippet: `-- Diagnosing Deadlocks and Transaction Locks in MySQL
+-- 1. Inspect most recent deadlock details from InnoDB Monitor
+SHOW ENGINE INNODB STATUS\\G
 
--- SLOW (FULL TABLE SCAN): Ignores leftmost tenant_id!
-EXPLAIN SELECT * FROM orders 
-WHERE status = 'COMPLETED' AND created_at >= '2026-01-01';`,
-    complexity: "Index Lookup: O(log N) tree traversal | Full Table Scan: O(N) disk pages",
-    commonMistakes: "Assuming MySQL can jump to middle index columns; placing high-cardinality timestamp ranges before equality filters in composite indexes.",
+-- 2. Inspect active transactions and lock waits in Performance Schema
+SELECT 
+    r.trx_id waiting_trx_id,
+    r.trx_mysql_thread_id waiting_thread,
+    b.trx_id blocking_trx_id,
+    b.trx_mysql_thread_id blocking_thread,
+    b.trx_query blocking_query
+FROM performance_schema.data_lock_waits w
+JOIN information_schema.innodb_trx b ON b.trx_id = w.blocking_engine_transaction_id
+JOIN information_schema.innodb_trx r ON r.trx_id = w.requesting_engine_transaction_id;`,
+    complexity: "MVCC read: O(1) buffer pool lookup | Deadlock check: O(V + E) cycle detection in lock wait graph",
+    commonMistakes: "Confusing Redo Log with Undo Log; long-running transactions causing massive Undo Tablespace bloat because old undo versions cannot be purged.",
     followUpQuestions: [
-      "What is Index Condition Pushdown (ICP) in MySQL and how does it optimize queries with partial prefix matches?",
-      "What is a Covering Index and how does it avoid the secondary-to-clustered index lookup (Bookmark Lookup)?"
+      "Why does REPEATABLE READ in MySQL prevent Phantom Reads using Next-Key Locks (Record Lock + Gap Lock)?",
+      "What is the doublewrite buffer in InnoDB and how does it prevent partial page writes on operating system crashes?"
     ],
-    tags: ["MySQL", "Indexing", "Composite Index", "B-Tree", "Optimization", "InnoDB"]
+    tags: ["MySQL", "InnoDB", "MVCC", "Redo Log", "Undo Log", "Deadlocks", "ACID"]
   },
   {
     id: "html-04",
@@ -2441,48 +2439,56 @@ class LRUCache {
     id: "c-05",
     topic: "c",
     topicName: "C Programming",
-    role: "Embedded / Systems Developer",
+    role: "Embedded / Systems Firmware Engineer",
     category: "technical",
     difficulty: "hard",
     experienceLevel: "senior",
-    question: "How do function pointers work in C, and how are they used to implement callbacks, event handlers, and polymorphism?",
-    modelAnswer: `In C, executable code resides in the text segment of memory. A **function pointer** stores the memory address of the first instruction of a function, allowing code to invoke functions dynamically at runtime.
+    question: "How does Memory Alignment and Structure Padding work in C, what is #pragma pack, and how do Bitwise Masking operations control hardware registers?",
+    modelAnswer: `Modern CPU architectures read memory in words (e.g. 4-byte or 8-byte chunks). Accessing unaligned addresses requires extra CPU bus cycles or triggers a hardware alignment fault on architectures like ARM.
 
-**Syntax:**
-\`return_type (*pointer_name)(parameter_types);\`
-- Example: \`int (*compare_fn)(const void *, const void *);\`
+**1. Structure Padding & Alignment Rules:**
+- The compiler automatically inserts invisible **padding bytes** between struct members so each variable aligns with an address that is a multiple of its \`sizeof(type)\`.
+- The overall size of the struct is always padded to be a multiple of the largest member's alignment requirement.
+- **Example:**
+  \`struct Foo { char a; int b; char c; };\`
+  Layout: \`char a\` (1 byte) + 3 bytes padding + \`int b\` (4 bytes) + \`char c\` (1 byte) + 3 bytes padding = **12 bytes**!
+  Reordered: \`struct Bar { int b; char a; char c; };\` = 4 + 1 + 1 + 2 bytes padding = **8 bytes** (saves 33% memory!).
 
-**Primary Use Cases:**
-1. **Callbacks:** Passing a custom comparison function to standard library algorithms like \`qsort()\`.
-2. **Polymorphism / Virtual Tables in C:** Implementing object-oriented vtables in C using structs holding function pointers (the foundation of the Linux Kernel virtual file system - VFS \`file_operations\`).
-3. **State Machines & Dispatch Tables:** Array of function pointers indexed by event enum for instant O(1) event dispatching without long \`switch\` statements.`,
-    interviewerIntent: "Tests low-level understanding of function addresses, calling conventions, runtime dispatching, and idiomatic C architecture.",
-    answerBlueprint: "Explain function pointer syntax and typedef. Detail text segment memory address. Provide qsort callback and struct-based vtable dispatch examples.",
-    codeSnippet: `// 1. Function Pointer Typedef
-typedef int (*BinaryOp)(int, int);
+**2. Controlling Alignment with #pragma pack:**
+- \`#pragma pack(push, 1)\` disables padding for binary serialization, network packets, or memory-mapped hardware protocols.
+- **Trade-off:** Minimal memory footprint, but unaligned reads can cause performance penalties on x86 or hardware traps on ARM.
 
-int add(int a, int b) { return a + b; }
-int multiply(int a, int b) { return a * b; }
+**3. Bitwise Masking for Hardware Control:**
+- Setting bits: \`REG |= (1 << n);\`
+- Clearing bits: \`REG &= ~(1 << n);\`
+- Toggling bits: \`REG ^= (1 << n);\`
+- Testing bits: \`if (REG & (1 << n)) { ... }\``,
+    interviewerIntent: "Assesses low-level hardware memory awareness, cache efficiency, bit-level hardware registers, and optimization skills in C.",
+    answerBlueprint: "1) Explain CPU word alignment and why padding exists. 2) Provide struct ordering example (12 bytes vs 8 bytes). 3) Explain #pragma pack for networking/hardware. 4) Write out standard bit manipulation idioms.",
+    codeSnippet: `// 1. Memory-optimized Struct Ordering
+struct OptimizedSensorData {
+    uint32_t timestamp;  // 4 bytes (offset 0)
+    uint16_t sensor_id;  // 2 bytes (offset 4)
+    uint8_t flags;       // 1 byte  (offset 6)
+    uint8_t status;      // 1 byte  (offset 7)
+}; // Total: Exactly 8 bytes, ZERO wasted padding!
 
-// 2. Dispatcher accepting Function Pointer
-int compute(int a, int b, BinaryOp op) {
-    return op(a, b); // Dynamic dispatch
-}
+// 2. Bitwise Register Manipulation
+#define ENABLE_BIT  (1 << 0)
+#define READY_BIT   (1 << 3)
 
-// 3. Object-Oriented Vtable in C (Linux Kernel Style)
-struct DeviceDriver {
-    const char *name;
-    int (*init)(void);
-    int (*read)(char *buf, size_t len);
-    void (*close)(void);
-};`,
-    complexity: "Time: O(1) indirect call with slight branch predictor overhead | Space: 8 bytes per pointer",
-    commonMistakes: "Omitting parentheses around (*ptr), creating a function that returns a pointer instead of a function pointer; type mismatch in signature.",
+void configureHardware(volatile uint32_t *ctrl_reg) {
+    *ctrl_reg |= ENABLE_BIT;          // Turn ON Enable bit without altering others
+    *ctrl_reg &= ~READY_BIT;          // Clear Ready bit
+    *ctrl_reg ^= (1 << 5);            // Toggle bit 5
+}`,
+    complexity: "Time: O(1) single-cycle bitwise instructions | Space: Zero overhead struct packing",
+    commonMistakes: "Placing small char members between pointers and 64-bit integers causing massive struct bloat; ignoring endianness when parsing packed structs across network boundaries.",
     followUpQuestions: [
-      "How does qsort() use void pointers and function pointers to achieve generic sorting in C?",
-      "How does the Linux kernel implement device driver interfaces using struct file_operations?"
+      "What is the difference between Big-Endian and Little-Endian byte order, and how can you determine endianness at runtime in C?",
+      "What is a bitfield in C, and why are bitfields not portable across different compilers for network packet headers?"
     ],
-    tags: ["C", "Function Pointers", "Callbacks", "vtable", "Polymorphism", "Low-Level"]
+    tags: ["C", "Memory Alignment", "Struct Padding", "Bitwise", "Hardware", "Low-Level"]
   }
 ];
 

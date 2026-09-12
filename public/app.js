@@ -974,8 +974,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.success) {
         currentQuestions = data.results;
-        if (searchResultsHeading) searchResultsHeading.textContent = `🔍 Results for: "${query || topic}" (${data.count} found)`;
-        if (searchResultsSubheading) searchResultsSubheading.textContent = `Found ${data.count} matching interview questions and model answers.`;
+        
+        // Sync topic dropdown if language was detected from search text
+        if (data.detectedTopic && headerSearchTopic && headerSearchTopic.value !== data.detectedTopic) {
+          headerSearchTopic.value = data.detectedTopic;
+        }
+
+        if (data.topicName) {
+          if (searchResultsHeading) searchResultsHeading.textContent = `📚 ${data.topicName} — Technical Questions (${data.count} found)`;
+          if (searchResultsSubheading) searchResultsSubheading.textContent = `Showing in-depth, verified interview questions and model answers exclusively for ${data.topicName}.`;
+        } else {
+          if (searchResultsHeading) searchResultsHeading.textContent = `🔍 Results for: "${query || topic}" (${data.count} found)`;
+          if (searchResultsSubheading) {
+            if (data.count > 0) {
+              searchResultsSubheading.textContent = `Found ${data.count} matching interview questions and model answers.`;
+            } else {
+              searchResultsSubheading.textContent = `No questions found matching "${query}". Try searching for C, Python, Java, SQL, React, Node, etc.`;
+            }
+          }
+        }
+
         if (searchResultsContainer) renderQuestionsList(data.results, searchResultsContainer);
       }
     } catch (err) {
