@@ -1,0 +1,37 @@
+# Senior Full Stack & Distributed Systems Engineer
+Email: candidate@gmail.com | Phone: +91-9876543210 | Bengaluru, India
+GitHub: github.com/candidate-dev | Portfolio: candidate.dev
+
+## Professional Summary
+Results-driven Senior Software Engineer with 5+ years of experience architecting high-concurrency distributed web applications, optimizing databases, and deploying scalable microservices in Java, Python, and Node.js. Passionate about algorithms, low-latency performance, and clean code principles.
+
+## Core Technical Skills
+- Programming Languages: JavaScript (ES6+), TypeScript, Python, Java 17, C, C++, SQL
+- Frontend: React.js, Next.js, Redux Toolkit, HTML5, CSS3, Tailwind CSS
+- Backend & Frameworks: Node.js, Express, FastAPI, Spring Boot, Microservices
+- Databases & Systems: MySQL (InnoDB), PostgreSQL, Redis caching, Apache Kafka
+- DevOps & Cloud: Docker, Kubernetes, AWS (S3, EC2), CI/CD GitHub Actions
+
+## Professional Experience
+### Lead Software Engineer — TechSphere Solutions (2023 – Present)
+- Architected and deployed event-driven payment processing microservices using Node.js, Express, and Redis, handling 4.5M daily transactions.
+- Optimized slow MySQL queries and composite B-Tree indexes, reducing P99 latency by 42% and eliminating query timeouts.
+- Designed responsive React frontends with custom hooks and debouncing, improving Largest Contentful Paint (LCP) by 35% for 180k active users.
+- Spearheaded migration from monolithic architecture to containerized Docker services, accelerating deployment velocity by 65%.
+
+### Software Engineer — CloudScale Systems (2021 – 2023)
+- Engineered scalable RESTful APIs with Python FastAPI and PostgreSQL, serving 600k monthly API requests with 99.98% uptime.
+- Developed real-time telemetry processing pipelines using Java Spring Boot and Apache Kafka, processing 15k messages per second.
+- Implemented robust authentication with OAuth2 and JWT, securing sensitive customer transaction data.
+- Mentored 4 junior engineers on data structures, algorithmic complexity, and unit testing practices.
+
+## Key Projects
+### HyperQueue — Distributed In-Memory Message Broker (C++ & Python)
+- Built a high-performance multithreaded message queue in C++ utilizing ring buffers, lock-free concurrency, and socket programming.
+- Achieved sub-50 microsecond delivery latency with zero packet drops under benchmark stress tests.
+
+### CodeSprint — Real-Time Collaborative Coding Studio (React & Node.js)
+- Implemented real-time code editor with WebSockets, syntax highlighting, and Docker-sandboxed remote code execution for 12 programming languages.
+
+## Education
+- B.Tech in Computer Science & Engineering, Top 5% Rank, 2021

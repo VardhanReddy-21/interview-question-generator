@@ -195,8 +195,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const resumeMatchedSkills = document.getElementById('resume-matched-skills');
   const resumeMissingSkills = document.getElementById('resume-missing-skills');
   const resumeFluffWrap = document.getElementById('resume-fluff-wrap');
-  const resumeFluffSkills = document.getElementById('resume-fluff-skills');
   const resumeAdviceList = document.getElementById('resume-advice-list');
+
+  // Resume File Upload Dropzone Elements
+  const resumeDropzone = document.getElementById('resume-dropzone');
+  const resumeFileInput = document.getElementById('resume-file-input');
+  const dropzoneContent = document.getElementById('dropzone-content');
+  const uploadedFileBanner = document.getElementById('uploaded-file-banner');
+  const uploadedFileName = document.getElementById('uploaded-file-name');
+  const uploadedFileSize = document.getElementById('uploaded-file-size');
+  const fileIconBadge = document.getElementById('file-icon-badge');
+  const btnRemoveFile = document.getElementById('btn-remove-file');
+  const btnDownloadSample = document.getElementById('btn-download-sample');
 
   // ==========================================================================
   // 1. THEME SWITCHING (DARK / LIGHT MODE)
@@ -1337,6 +1347,136 @@ Results-driven Senior Software Engineer with 5+ years of experience architecting
     });
   }
 
+  // File Upload & Drag-and-Drop Handlers
+  if (resumeDropzone && resumeFileInput) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      resumeDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resumeDropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      resumeDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resumeDropzone.classList.remove('dragover');
+      });
+    });
+
+    resumeDropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt ? dt.files : null;
+      if (files && files.length > 0) {
+        handleResumeFile(files[0]);
+      }
+    });
+
+    resumeFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleResumeFile(e.target.files[0]);
+      }
+    });
+  }
+
+  if (btnRemoveFile) {
+    btnRemoveFile.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (resumeFileInput) resumeFileInput.value = '';
+      if (uploadedFileBanner) uploadedFileBanner.classList.add('hidden');
+      if (dropzoneContent) dropzoneContent.classList.remove('hidden');
+      if (resumeTextInput) {
+        resumeTextInput.value = '';
+        if (resumeWordCount) resumeWordCount.textContent = '0 words';
+      }
+      if (resumeResultsContent) resumeResultsContent.classList.add('hidden');
+      if (resumeEmptyPrompt) resumeEmptyPrompt.classList.remove('hidden');
+      showToast("Uploaded resume removed.");
+    });
+  }
+
+  async function handleResumeFile(file) {
+    if (!file) return;
+
+    const fileName = file.name;
+    const fileSizeKb = Math.round(file.size / 1024);
+    const extension = fileName.split('.').pop().toLowerCase();
+
+    // Show active uploaded file banner
+    if (dropzoneContent) dropzoneContent.classList.add('hidden');
+    if (uploadedFileBanner) uploadedFileBanner.classList.remove('hidden');
+    if (uploadedFileName) uploadedFileName.textContent = fileName;
+    if (uploadedFileSize) uploadedFileSize.textContent = `${fileSizeKb} KB • Extracting text...`;
+    if (fileIconBadge) {
+      fileIconBadge.textContent = extension === 'pdf' ? '📕' : (extension.includes('doc') ? '📘' : '📄');
+    }
+
+    try {
+      let extractedText = '';
+
+      if (extension === 'pdf') {
+        if (window['pdfjs-dist/build/pdf']) {
+          const pdfjsLib = window['pdfjs-dist/build/pdf'];
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+          }
+          extractedText = fullText.trim();
+        } else {
+          extractedText = await file.text();
+        }
+      } else if (extension === 'docx') {
+        if (window.mammoth) {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await window.mammoth.extractRawText({ arrayBuffer });
+          extractedText = result.value.trim();
+        } else {
+          extractedText = await file.text();
+        }
+      } else {
+        extractedText = await file.text();
+      }
+
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error("Could not extract readable text from this file. Please paste your resume text directly.");
+      }
+
+      if (resumeTextInput) {
+        resumeTextInput.value = extractedText;
+        const words = extractedText.split(/\s+/).filter(w => w.length > 0).length;
+        if (resumeWordCount) {
+          resumeWordCount.textContent = `${words} words`;
+        }
+      }
+
+      if (uploadedFileSize) {
+        uploadedFileSize.textContent = `${fileSizeKb} KB • Extracted`;
+      }
+
+      showToast(`📄 Uploaded: ${fileName} (${fileSizeKb} KB)`);
+
+      // Auto-trigger score if sufficient words
+      if (btnScoreResume) {
+        setTimeout(() => {
+          btnScoreResume.click();
+        }, 300);
+      }
+    } catch (err) {
+      console.error("Resume file extraction error:", err);
+      alert(`Could not extract text from "${fileName}": ${err.message || 'Unknown error'}. Please paste your resume directly in the text area below.`);
+      if (uploadedFileSize) {
+        uploadedFileSize.textContent = `${fileSizeKb} KB • Extraction Failed`;
+      }
+    }
+  }
+
   // Load sample resume button
   if (btnSampleResume) {
     btnSampleResume.addEventListener('click', () => {
@@ -1351,6 +1491,22 @@ Results-driven Senior Software Engineer with 5+ years of experience architecting
     });
   }
 
+  // Download sample resume button (.txt file)
+  if (btnDownloadSample) {
+    btnDownloadSample.addEventListener('click', () => {
+      const blob = new Blob([SAMPLE_RESUME], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Senior_Software_Engineer_Sample_Resume.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("📥 Sample Resume Downloaded! Try uploading it now.");
+    });
+  }
+
   // Clear resume button
   if (btnClearResume) {
     btnClearResume.addEventListener('click', () => {
@@ -1358,6 +1514,9 @@ Results-driven Senior Software Engineer with 5+ years of experience architecting
         resumeTextInput.value = '';
         if (resumeWordCount) resumeWordCount.textContent = '0 words';
       }
+      if (resumeFileInput) resumeFileInput.value = '';
+      if (uploadedFileBanner) uploadedFileBanner.classList.add('hidden');
+      if (dropzoneContent) dropzoneContent.classList.remove('hidden');
       if (resumeResultsContent) resumeResultsContent.classList.add('hidden');
       if (resumeEmptyPrompt) resumeEmptyPrompt.classList.remove('hidden');
     });

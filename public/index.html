@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <!-- Client-Side Document Parsing for PDF & Word Resume Uploads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 </head>
 <body class="theme-dark">
   <!-- Dynamic Glowing Background Orbs for Colorful Aesthetics -->
@@ -594,17 +597,51 @@
           </details>
         </div>
 
+        <!-- File Upload Dropzone -->
+        <div class="form-group">
+          <label>Upload Resume File</label>
+          <div class="resume-dropzone" id="resume-dropzone">
+            <input type="file" id="resume-file-input" accept=".pdf,.docx,.txt,.md,.rtf" class="hidden-file-input" />
+            <div class="dropzone-content" id="dropzone-content">
+              <div class="dropzone-icon">📁</div>
+              <div class="dropzone-text">
+                <strong>Click to browse</strong> or drag &amp; drop your resume here
+              </div>
+              <p class="dropzone-hint">Supports PDF, Word (.docx), Plain Text (.txt), and Markdown (.md)</p>
+            </div>
+
+            <!-- Active Uploaded File Info Banner -->
+            <div class="uploaded-file-banner hidden" id="uploaded-file-banner">
+              <div class="file-info-badge">
+                <span class="file-badge-icon" id="file-icon-badge">📄</span>
+                <div class="file-meta">
+                  <span class="file-name" id="uploaded-file-name">resume.pdf</span>
+                  <span class="file-size" id="uploaded-file-size">0 KB • Extracted</span>
+                </div>
+              </div>
+              <button type="button" class="btn-remove-file" id="btn-remove-file" title="Remove file">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-subtle">
+          <span>OR REVIEW / EDIT RESUME TEXT</span>
+        </div>
+
         <div class="form-group">
           <div class="label-with-counter">
-            <label for="resume-text-input">Paste Resume Text</label>
+            <label for="resume-text-input">Extracted / Pasted Resume Content</label>
             <span class="word-counter-badge" id="resume-word-count">0 words</span>
           </div>
-          <textarea id="resume-text-input" class="form-control resume-textarea" rows="14" placeholder="Paste your complete resume markdown or plain text here (Summary, Experience, Projects, Skills, Education)..."></textarea>
+          <textarea id="resume-text-input" class="form-control resume-textarea" rows="12" placeholder="Your resume text will appear here automatically when you upload a file, or you can paste markdown / plain text directly..."></textarea>
         </div>
 
         <div class="resume-actions-row">
           <button type="button" class="btn-secondary" id="btn-sample-resume" title="Fill with sample senior engineer resume">
-            ⚡ Load Sample Resume
+            ⚡ Load Sample
+          </button>
+          <button type="button" class="btn-secondary" id="btn-download-sample" title="Download sample resume as a .txt file to test upload">
+            📥 Download Sample (.txt)
           </button>
           <button type="button" class="btn-secondary" id="btn-clear-resume" title="Clear text">
             🧹 Clear

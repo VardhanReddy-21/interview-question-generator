@@ -1790,6 +1790,143 @@ body.theme-light .topic-shortcut-bar {
   color: var(--text-primary);
 }
 
+/* Resume Dropzone */
+.resume-dropzone {
+  position: relative;
+  background: var(--bg-input);
+  border: 2px dashed var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.4rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.resume-dropzone:hover,
+.resume-dropzone.dragover {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.06);
+  transform: translateY(-1px);
+}
+
+.hidden-file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.dropzone-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.35rem;
+}
+
+.dropzone-text {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.browse-link {
+  color: var(--accent-primary);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dropzone-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Uploaded file banner */
+.uploaded-file-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-primary);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  position: relative;
+  z-index: 10;
+}
+
+.file-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.file-badge-icon {
+  font-size: 1.4rem;
+}
+
+.file-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  font-size: 0.7rem;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.btn-remove-file {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+}
+
+.btn-remove-file:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.divider-subtle {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.1rem 0 0.8rem 0;
+}
+
+.divider-subtle::before,
+.divider-subtle::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.divider-subtle span {
+  padding: 0 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
 .label-with-counter {
   display: flex;
   justify-content: space-between;
