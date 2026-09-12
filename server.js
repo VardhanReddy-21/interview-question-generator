@@ -37,9 +37,9 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`===================================================`);
     console.log(`🚀 Get Ready for Study Platform Running!`);
-    console.log(`📡 Local Host: http://getreadyforstudy:${PORT}`);
-    console.log(`🌐 Localhost:  http://localhost:${PORT}`);
-    console.log(`📁 Frontend:   Serving from ./public`);
+    console.log(`🌐 Live URL:  https://interview-question-generator-omega.vercel.app/`);
+    console.log(`📡 Local Dev: http://localhost:${PORT}`);
+    console.log(`📁 Frontend:  Serving from ./public`);
     console.log(`===================================================`);
   });
 }

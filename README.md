@@ -95,10 +95,8 @@ npm run dev
 ```
 
 ### 3. Open in Browser
-Visit:
-```
-http://localhost:3000
-```
+- **Live Production URL:** [https://interview-question-generator-omega.vercel.app/](https://interview-question-generator-omega.vercel.app/)
+- **Local Development URL:** [http://localhost:3000](http://localhost:3000)
 
 ---
 
