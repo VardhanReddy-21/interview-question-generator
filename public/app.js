@@ -8,18 +8,40 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // STATE MANAGEMENT
   // ==========================================================================
-  let currentUser = JSON.parse(localStorage.getItem('study_user') || 'null');
-  let currentTheme = localStorage.getItem('study_theme') || 'dark';
+  let currentUser = null;
+  try {
+    currentUser = JSON.parse(localStorage.getItem('study_user') || 'null');
+  } catch (e) {
+    currentUser = null;
+  }
+
+  let currentTheme = 'dark';
+  try {
+    currentTheme = localStorage.getItem('study_theme') || 'dark';
+  } catch (e) {
+    currentTheme = 'dark';
+  }
+
   let currentQuestions = [];
   let currentMeta = {};
   let activeView = 'home';
   let activeTopic = 'all';
   let searchTimeout = null;
-  let bookmarkedIds = new Set(JSON.parse(localStorage.getItem('study_bookmarks') || '[]'));
-  let practiceCount = parseInt(localStorage.getItem('study_practice_count') || '0', 10);
 
-  // Apply initial theme
-  applyTheme(currentTheme);
+  let bookmarkedIds = new Set();
+  try {
+    const savedBookmarks = JSON.parse(localStorage.getItem('study_bookmarks') || '[]');
+    bookmarkedIds = new Set(savedBookmarks);
+  } catch (e) {
+    bookmarkedIds = new Set();
+  }
+
+  let practiceCount = 0;
+  try {
+    practiceCount = parseInt(localStorage.getItem('study_practice_count') || '0', 10);
+  } catch (e) {
+    practiceCount = 0;
+  }
 
   // ==========================================================================
   // DOM ELEMENT REFERENCES
@@ -68,8 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const countSelect = document.getElementById('count-select');
   const jdInput = document.getElementById('jd-input');
   const generateBtn = document.getElementById('generate-btn');
-  const btnText = generateBtn.querySelector('.btn-text');
-  const btnSpinner = generateBtn.querySelector('.btn-spinner');
+  const btnText = generateBtn ? generateBtn.querySelector('.btn-text') : null;
+  const btnSpinner = generateBtn ? generateBtn.querySelector('.btn-spinner') : null;
 
   // Results & Containers
   const welcomeCard = document.getElementById('welcome-card');
@@ -147,25 +169,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   function applyTheme(theme) {
     currentTheme = theme;
-    localStorage.setItem('study_theme', theme);
+    try {
+      localStorage.setItem('study_theme', theme);
+    } catch (e) {}
+
     document.body.className = theme === 'dark' ? 'theme-dark' : 'theme-light';
     document.documentElement.setAttribute('data-theme', theme);
 
-    if (themeIcon && themeLabel) {
+    const icon = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon && label) {
       if (theme === 'dark') {
-        themeIcon.textContent = '☀️';
-        themeLabel.textContent = 'Light';
+        icon.textContent = '☀️';
+        label.textContent = 'Light';
       } else {
-        themeIcon.textContent = '🌙';
-        themeLabel.textContent = 'Dark';
+        icon.textContent = '🌙';
+        label.textContent = 'Dark';
       }
     }
   }
 
-  themeToggleBtn.addEventListener('click', () => {
-    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    applyTheme(nextTheme);
-  });
+  // Apply theme safely now that DOM elements exist
+  applyTheme(currentTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(nextTheme);
+    });
+  }
 
   // ==========================================================================
   // 2. VIEW NAVIGATION
@@ -174,161 +206,178 @@ document.addEventListener('DOMContentLoaded', () => {
     activeView = viewName;
 
     // Reset nav active states
-    [navHome, navExplore, navDashboard, navStudy, navCareer].forEach(b => b.classList.remove('active'));
-    [viewHome, viewExplore, viewDashboard, viewStudy, viewCareer, viewSearch].forEach(v => v.classList.add('hidden'));
+    const navButtons = [navHome, navExplore, navDashboard, navStudy, navCareer];
+    navButtons.forEach(b => { if (b) b.classList.remove('active'); });
+
+    const viewSections = [viewHome, viewExplore, viewDashboard, viewStudy, viewCareer, viewSearch];
+    viewSections.forEach(v => { if (v) v.classList.add('hidden'); });
 
     if (viewName === 'home') {
-      navHome.classList.add('active');
-      viewHome.classList.remove('hidden');
-      breadcrumbBar.classList.add('hidden');
+      if (navHome) navHome.classList.add('active');
+      if (viewHome) viewHome.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.add('hidden');
     } else if (viewName === 'explore') {
-      navExplore.classList.add('active');
-      viewExplore.classList.remove('hidden');
-      breadcrumbBar.classList.remove('hidden');
-      breadcrumbCurrentView.textContent = label || 'Explore All Topics';
+      if (navExplore) navExplore.classList.add('active');
+      if (viewExplore) viewExplore.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
+      if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = label || 'Explore All Topics';
       loadExploreView(activeTopic);
     } else if (viewName === 'dashboard') {
-      navDashboard.classList.add('active');
-      viewDashboard.classList.remove('hidden');
-      breadcrumbBar.classList.remove('hidden');
-      breadcrumbCurrentView.textContent = 'Candidate Dashboard';
+      if (navDashboard) navDashboard.classList.add('active');
+      if (viewDashboard) viewDashboard.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
+      if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = 'Candidate Dashboard';
       loadDashboard();
     } else if (viewName === 'study') {
-      navStudy.classList.add('active');
-      viewStudy.classList.remove('hidden');
-      breadcrumbBar.classList.remove('hidden');
-      breadcrumbCurrentView.textContent = '7-Day Study Sprint';
+      if (navStudy) navStudy.classList.add('active');
+      if (viewStudy) viewStudy.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
+      if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = '7-Day Study Sprint';
     } else if (viewName === 'career') {
-      navCareer.classList.add('active');
-      viewCareer.classList.remove('hidden');
-      breadcrumbBar.classList.remove('hidden');
-      breadcrumbCurrentView.textContent = 'Career Hub & Roadmaps';
+      if (navCareer) navCareer.classList.add('active');
+      if (viewCareer) viewCareer.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
+      if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = 'Career Hub & Roadmaps';
       loadCareerRoadmaps();
     } else if (viewName === 'search') {
-      viewSearch.classList.remove('hidden');
-      breadcrumbBar.classList.remove('hidden');
-      breadcrumbCurrentView.textContent = 'Search Results';
+      if (viewSearch) viewSearch.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
+      if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = 'Search Results';
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  brandHome.addEventListener('click', () => switchView('home'));
-  navHome.addEventListener('click', () => switchView('home'));
-  navExplore.addEventListener('click', () => switchView('explore'));
-  navDashboard.addEventListener('click', () => switchView('dashboard'));
-  navStudy.addEventListener('click', () => switchView('study'));
-  navCareer.addEventListener('click', () => switchView('career'));
-  btnBackHome.addEventListener('click', () => switchView('home'));
+  if (brandHome) brandHome.addEventListener('click', () => switchView('home'));
+  if (navHome) navHome.addEventListener('click', () => switchView('home'));
+  if (navExplore) navExplore.addEventListener('click', () => switchView('explore'));
+  if (navDashboard) navDashboard.addEventListener('click', () => switchView('dashboard'));
+  if (navStudy) navStudy.addEventListener('click', () => switchView('study'));
+  if (navCareer) navCareer.addEventListener('click', () => switchView('career'));
+  if (btnBackHome) btnBackHome.addEventListener('click', () => switchView('home'));
 
   if (btnWelcomeExplore) btnWelcomeExplore.addEventListener('click', () => switchView('explore'));
   if (btnWelcomeDemo) {
     btnWelcomeDemo.addEventListener('click', () => {
-      topicSelect.value = 'all';
-      countSelect.value = '5';
-      generateBtn.click();
+      if (topicSelect) topicSelect.value = 'all';
+      if (countSelect) countSelect.value = '5';
+      if (generateBtn) generateBtn.click();
     });
   }
 
   // ==========================================================================
   // 3. TOPIC SHORTCUT PILLS & SELECTION
   // ==========================================================================
-  shortcutPillsList.addEventListener('click', (e) => {
-    const pill = e.target.closest('.s-pill');
-    if (!pill) return;
+  if (shortcutPillsList) {
+    shortcutPillsList.addEventListener('click', (e) => {
+      const pill = e.target.closest('.s-pill');
+      if (!pill) return;
 
-    document.querySelectorAll('.s-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
+      document.querySelectorAll('.s-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
 
-    const topicId = pill.dataset.topic;
-    activeTopic = topicId;
+      const topicId = pill.dataset.topic;
+      activeTopic = topicId;
 
-    // Sync header dropdown & generator select
-    if (headerSearchTopic) headerSearchTopic.value = topicId;
-    if (topicSelect) topicSelect.value = topicId;
+      if (headerSearchTopic) headerSearchTopic.value = topicId;
+      if (topicSelect) topicSelect.value = topicId;
 
-    if (activeView === 'explore') {
-      loadExploreView(topicId);
-    } else {
-      switchView('explore', `Topic: ${pill.textContent}`);
-    }
-  });
+      if (activeView === 'explore') {
+        loadExploreView(topicId);
+      } else {
+        switchView('explore', `Topic: ${pill.textContent}`);
+      }
+    });
+  }
 
   // Custom role input toggle
-  roleSelect.addEventListener('change', () => {
-    if (roleSelect.value === 'custom') {
-      customRoleInput.classList.remove('hidden');
-      customRoleInput.focus();
-    } else {
-      customRoleInput.classList.add('hidden');
-    }
-  });
+  if (roleSelect) {
+    roleSelect.addEventListener('change', () => {
+      if (roleSelect.value === 'custom') {
+        if (customRoleInput) {
+          customRoleInput.classList.remove('hidden');
+          customRoleInput.focus();
+        }
+      } else {
+        if (customRoleInput) customRoleInput.classList.add('hidden');
+      }
+    });
+  }
 
   // ==========================================================================
   // 4. QUESTION GENERATOR FORM SUBMISSION
   // ==========================================================================
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    const selectedRole = roleSelect.value === 'custom'
-      ? customRoleInput.value.trim() || 'Software Engineer'
-      : roleSelect.value;
+      const selectedRole = roleSelect && roleSelect.value === 'custom'
+        ? (customRoleInput ? customRoleInput.value.trim() : '') || 'Software Engineer'
+        : (roleSelect ? roleSelect.value : 'Full Stack / Web Developer');
 
-    const payload = {
-      role: selectedRole,
-      topic: topicSelect.value,
-      experienceLevel: experienceSelect.value,
-      category: categorySelect.value,
-      difficulty: difficultySelect.value,
-      count: parseInt(countSelect.value, 10),
-      jdText: jdInput.value.trim()
-    };
+      const payload = {
+        role: selectedRole,
+        topic: topicSelect ? topicSelect.value : 'all',
+        experienceLevel: experienceSelect ? experienceSelect.value : 'entry',
+        category: categorySelect ? categorySelect.value : 'all',
+        difficulty: difficultySelect ? difficultySelect.value : 'all',
+        count: countSelect ? parseInt(countSelect.value, 10) : 5,
+        jdText: jdInput ? jdInput.value.trim() : ''
+      };
 
-    // UI Loading state
-    btnText.textContent = 'Generating verified Q&As...';
-    btnSpinner.classList.remove('hidden');
-    generateBtn.disabled = true;
+      // UI Loading state
+      if (btnText) btnText.textContent = 'Generating verified Q&As...';
+      if (btnSpinner) btnSpinner.classList.remove('hidden');
+      if (generateBtn) generateBtn.disabled = true;
 
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Generation failed');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Generation failed');
 
-      currentQuestions = data.questions;
-      currentMeta = data.meta;
+        currentQuestions = data.questions;
+        currentMeta = data.meta;
 
-      // Render questions
-      renderQuestionsList(currentQuestions, questionsContainer);
+        // Render questions
+        if (questionsContainer) renderQuestionsList(currentQuestions, questionsContainer);
 
-      // Show header & hide welcome
-      welcomeCard.classList.add('hidden');
-      resultsHeader.classList.remove('hidden');
-      resultsTitle.textContent = `${payload.topic !== 'all' ? payload.topic.toUpperCase() + ' - ' : ''}${payload.role} (${currentQuestions.length} Questions)`;
-      resultsMeta.textContent = `Target Level: ${payload.experienceLevel.toUpperCase()} | Track: ${payload.category} | Verified Detailed Answers Ready`;
+        // Show header & hide welcome
+        if (welcomeCard) welcomeCard.classList.add('hidden');
+        if (resultsHeader) resultsHeader.classList.remove('hidden');
+        if (resultsTitle) {
+          resultsTitle.textContent = `${payload.topic !== 'all' ? payload.topic.toUpperCase() + ' - ' : ''}${payload.role} (${currentQuestions.length} Questions)`;
+        }
+        if (resultsMeta) {
+          resultsMeta.textContent = `Target Level: ${payload.experienceLevel.toUpperCase()} | Track: ${payload.category} | Verified Detailed Answers Ready`;
+        }
 
-      // Track practice activity
-      practiceCount += currentQuestions.length;
-      localStorage.setItem('study_practice_count', practiceCount);
+        // Track practice activity
+        practiceCount += currentQuestions.length;
+        try {
+          localStorage.setItem('study_practice_count', practiceCount);
+        } catch (e) {}
 
-    } catch (err) {
-      console.error(err);
-      alert('Error generating questions: ' + err.message);
-    } finally {
-      btnText.textContent = '✨ Generate Questions & Detailed Answers';
-      btnSpinner.classList.add('hidden');
-      generateBtn.disabled = false;
-    }
-  });
+      } catch (err) {
+        console.error(err);
+        alert('Error generating questions: ' + err.message);
+      } finally {
+        if (btnText) btnText.textContent = '✨ Generate Questions & Detailed Answers';
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+        if (generateBtn) generateBtn.disabled = false;
+      }
+    });
+  }
 
   // ==========================================================================
   // 5. RENDER QUESTION CARDS WITH DETAILED "SHOW MORE OPTIONS"
   // ==========================================================================
   function renderQuestionsList(questions, container) {
+    if (!container) return;
     container.innerHTML = '';
 
     if (!questions || questions.length === 0) {
@@ -352,10 +401,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="q-header">
           <div class="q-badges">
             <span class="badge-topic" style="background: ${topicColor};">
-              ${q.topicName || q.topic || 'General'}
+              ${escapeHtml(q.topicName || q.topic || 'General')}
             </span>
-            <span class="badge-diff ${q.difficulty || 'medium'}">${q.difficulty || 'medium'}</span>
-            <span class="badge-cat">${q.category || 'technical'}</span>
+            <span class="badge-diff ${q.difficulty || 'medium'}">${escapeHtml(q.difficulty || 'medium')}</span>
+            <span class="badge-cat">${escapeHtml(q.category || 'technical')}</span>
           </div>
           <button class="btn-bookmark ${isBookmarked ? 'bookmarked' : ''}" data-qid="${q.id}" title="${isBookmarked ? 'Remove from Saved' : 'Save to Dashboard'}">
             ${isBookmarked ? '★' : '☆'}
@@ -404,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="code-block-wrapper">
                 <div class="code-header">
-                  <span class="code-lang">${q.topicName || 'Code'}</span>
+                  <span class="code-lang">${escapeHtml(q.topicName || 'Code')}</span>
                   <button class="btn-copy-code" data-code="${encodeURIComponent(q.codeSnippet)}">📋 Copy Code</button>
                 </div>
                 <pre class="code-content"><code>${escapeHtml(q.codeSnippet)}</code></pre>
@@ -458,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
               🔊 Read Aloud
             </button>
           </div>
-          <span class="q-id-tag">ID: ${q.id}</span>
+          <span class="q-id-tag">ID: ${escapeHtml(q.id)}</span>
         </div>
 
         <!-- Interactive Practice Drawer (Collapsible) -->
@@ -483,6 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. QUESTION CARD EVENT LISTENERS
   // ==========================================================================
   function attachQuestionEventListeners(container) {
+    if (!container) return;
+
     // Show More Options Toggle
     container.querySelectorAll('.btn-toggle-options').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -493,11 +544,13 @@ document.addEventListener('DOMContentLoaded', () => {
           if (isOpen) {
             drawer.classList.add('hidden');
             btn.classList.remove('open');
-            btn.querySelector('span:first-child').textContent = '🔍 Show More Details (Blueprint, Code, Complexity & Probes)';
+            const spanText = btn.querySelector('span:first-child');
+            if (spanText) spanText.textContent = '🔍 Show More Details (Blueprint, Code, Complexity & Probes)';
           } else {
             drawer.classList.remove('hidden');
             btn.classList.add('open');
-            btn.querySelector('span:first-child').textContent = '🔼 Hide Details';
+            const spanText = btn.querySelector('span:first-child');
+            if (spanText) spanText.textContent = '🔼 Hide Details';
           }
         }
       });
@@ -506,11 +559,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Copy Code Buttons
     container.querySelectorAll('.btn-copy-code').forEach(btn => {
       btn.addEventListener('click', () => {
-        const rawCode = decodeURIComponent(btn.dataset.code);
-        navigator.clipboard.writeText(rawCode).then(() => {
-          btn.textContent = '✅ Copied!';
-          setTimeout(() => { btn.textContent = '📋 Copy Code'; }, 2000);
-        });
+        const rawCode = decodeURIComponent(btn.dataset.code || '');
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(rawCode).then(() => {
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => { btn.textContent = '📋 Copy Code'; }, 2000);
+          });
+        }
       });
     });
 
@@ -519,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => {
         const qid = btn.dataset.qid;
         const qObj = findQuestionById(qid);
-        if (qObj) {
+        if (qObj && navigator.clipboard) {
           const fullText = `Q: ${qObj.question}\n\nModel Answer:\n${qObj.modelAnswer}\n\nBlueprint:\n${qObj.answerBlueprint}`;
           navigator.clipboard.writeText(fullText).then(() => {
             btn.textContent = '✅ Copied!';
@@ -553,9 +608,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', async () => {
         const qid = btn.dataset.qid;
         const practiceDrawer = document.getElementById(`practice-${qid}`);
+        if (!practiceDrawer) return;
+
         const textarea = practiceDrawer.querySelector('.practice-textarea');
         const evalBox = document.getElementById(`eval-result-${qid}`);
-        const userAns = textarea.value.trim();
+        const userAns = textarea ? textarea.value.trim() : '';
 
         if (!userAns) {
           alert('Please type an answer first to evaluate.');
@@ -563,6 +620,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const qObj = findQuestionById(qid);
+        if (!qObj) return;
+
         btn.textContent = 'Evaluating...';
         btn.disabled = true;
 
@@ -582,17 +641,21 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!data.success) throw new Error(data.error);
 
           const ev = data.evaluation;
-          evalBox.classList.remove('hidden');
-          evalBox.innerHTML = `
-            <div class="eval-score-badge">Score: ${ev.score}/10 — ${ev.verdict}</div>
-            <p style="font-size: 0.85rem; margin-bottom: 0.35rem;"><strong>Strengths:</strong> ${ev.strengths.join(' ')}</p>
-            <p style="font-size: 0.85rem; margin-bottom: 0.35rem; color: #f59e0b;"><strong>Improvements:</strong> ${ev.improvements.join(' ')}</p>
-            <p style="font-size: 0.82rem; color: var(--text-muted);"><strong>Next Step:</strong> ${ev.nextStepSuggestion}</p>
-          `;
+          if (evalBox) {
+            evalBox.classList.remove('hidden');
+            evalBox.innerHTML = `
+              <div class="eval-score-badge">Score: ${ev.score}/10 — ${escapeHtml(ev.verdict)}</div>
+              <p style="font-size: 0.85rem; margin-bottom: 0.35rem;"><strong>Strengths:</strong> ${escapeHtml(ev.strengths.join(' '))}</p>
+              <p style="font-size: 0.85rem; margin-bottom: 0.35rem; color: #f59e0b;"><strong>Improvements:</strong> ${escapeHtml(ev.improvements.join(' '))}</p>
+              <p style="font-size: 0.82rem; color: var(--text-muted);"><strong>Next Step:</strong> ${escapeHtml(ev.nextStepSuggestion)}</p>
+            `;
+          }
 
           // Track practice session
           practiceCount++;
-          localStorage.setItem('study_practice_count', practiceCount);
+          try {
+            localStorage.setItem('study_practice_count', practiceCount);
+          } catch (e) {}
 
         } catch (err) {
           alert('Evaluation error: ' + err.message);
@@ -611,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!qObj) return;
 
         if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel(); // Stop any ongoing speech
+          window.speechSynthesis.cancel();
           if (btn.classList.contains('speaking')) {
             btn.classList.remove('speaking');
             btn.textContent = '🔊 Read Aloud';
@@ -653,7 +716,9 @@ document.addEventListener('DOMContentLoaded', () => {
       isBookmarked = true;
     }
 
-    localStorage.setItem('study_bookmarks', JSON.stringify(Array.from(bookmarkedIds)));
+    try {
+      localStorage.setItem('study_bookmarks', JSON.stringify(Array.from(bookmarkedIds)));
+    } catch (e) {}
 
     if (btnElement) {
       btnElement.textContent = isBookmarked ? '★' : '☆';
@@ -661,7 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
       btnElement.title = isBookmarked ? 'Remove from Saved' : 'Save to Dashboard';
     }
 
-    // Sync with backend if user logged in
     if (currentUser) {
       try {
         await fetch('/api/bookmarks/toggle', {
@@ -681,7 +745,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadExploreView(topicId) {
     activeTopic = topicId || 'all';
 
-    // Populate topic tabs
     try {
       const res = await fetch('/api/topics');
       const data = await res.json();
@@ -692,18 +755,17 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error(err);
     }
 
-    // Load questions for topic
     try {
       const qRes = await fetch(`/api/topics/${activeTopic}`);
       const qData = await qRes.json();
       if (qData.success) {
         currentQuestions = qData.questions;
-        bannerTopicIcon.textContent = qData.topic.icon || '🌐';
-        bannerTopicName.textContent = qData.topic.name || 'All Topics';
-        bannerTopicDesc.textContent = qData.topic.description || 'Verified questions and comprehensive answers across all subjects.';
-        bannerTopicCount.textContent = `${qData.count} Questions`;
+        if (bannerTopicIcon) bannerTopicIcon.textContent = qData.topic.icon || '🌐';
+        if (bannerTopicName) bannerTopicName.textContent = qData.topic.name || 'All Topics';
+        if (bannerTopicDesc) bannerTopicDesc.textContent = qData.topic.description || 'Verified questions and comprehensive answers across all subjects.';
+        if (bannerTopicCount) bannerTopicCount.textContent = `${qData.count} Questions`;
 
-        renderQuestionsList(qData.questions, exploreQuestionsContainer);
+        if (exploreQuestionsContainer) renderQuestionsList(qData.questions, exploreQuestionsContainer);
       }
     } catch (err) {
       console.error(err);
@@ -711,6 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderExploreTabs(topics) {
+    if (!exploreTopicTabs || !topics) return;
     exploreTopicTabs.innerHTML = '';
     topics.forEach(t => {
       const btn = document.createElement('button');
@@ -730,16 +793,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   async function loadDashboard() {
     if (!currentUser) {
-      dashUserEmail.textContent = 'Guest Mode (Sign in with Gmail or Google to save progress)';
-      dashReadinessScore.textContent = '70%';
+      if (dashUserEmail) dashUserEmail.textContent = 'Guest Mode (Sign in with Gmail or Google to save progress)';
+      if (dashReadinessScore) dashReadinessScore.textContent = '70%';
     } else {
-      dashUserEmail.textContent = `Registered Candidate: ${currentUser.email} (${currentUser.name})`;
+      if (dashUserEmail) dashUserEmail.textContent = `Registered Candidate: ${currentUser.email} (${currentUser.name || 'Candidate'})`;
     }
 
-    metricPracticeSessions.textContent = practiceCount.toString();
-    metricSavedQuestions.textContent = bookmarkedIds.size.toString();
+    if (metricPracticeSessions) metricPracticeSessions.textContent = practiceCount.toString();
+    if (metricSavedQuestions) metricSavedQuestions.textContent = bookmarkedIds.size.toString();
 
-    // Fetch dashboard stats from backend
     try {
       const userEmail = currentUser ? currentUser.email : 'candidate@gmail.com';
       const res = await fetch(`/api/dashboard/stats?email=${encodeURIComponent(userEmail)}`);
@@ -747,28 +809,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.success) {
         const stats = data.stats;
-        metricTotalQuestions.textContent = `${stats.totalQuestionsInBank}+`;
-        dashReadinessScore.textContent = `${stats.readinessScore}%`;
+        if (metricTotalQuestions) metricTotalQuestions.textContent = `${stats.totalQuestionsInBank}+`;
+        if (dashReadinessScore) dashReadinessScore.textContent = `${stats.readinessScore}%`;
 
-        // Render topic mastery bars
         renderTopicMastery(stats.topicStats);
 
-        // Render saved questions
-        savedCountBadge.textContent = `${bookmarkedIds.size} Saved`;
-        if (bookmarkedIds.size === 0) {
-          dashSavedQuestionsContainer.innerHTML = `
-            <div class="empty-state">
-              <p>No questions saved yet. Click the 🔖 bookmark icon on any question to review it here anytime!</p>
-            </div>
-          `;
-        } else {
-          // Fetch questions corresponding to bookmarks
-          const allRes = await fetch('/api/topics/all');
-          const allData = await allRes.json();
-          if (allData.success) {
-            const savedItems = allData.questions.filter(q => bookmarkedIds.has(q.id));
-            currentQuestions = savedItems;
-            renderQuestionsList(savedItems, dashSavedQuestionsContainer);
+        if (savedCountBadge) savedCountBadge.textContent = `${bookmarkedIds.size} Saved`;
+        if (dashSavedQuestionsContainer) {
+          if (bookmarkedIds.size === 0) {
+            dashSavedQuestionsContainer.innerHTML = `
+              <div class="empty-state">
+                <p>No questions saved yet. Click the 🔖 bookmark icon on any question to review it here anytime!</p>
+              </div>
+            `;
+          } else {
+            const allRes = await fetch('/api/topics/all');
+            const allData = await allRes.json();
+            if (allData.success) {
+              const savedItems = allData.questions.filter(q => bookmarkedIds.has(q.id));
+              currentQuestions = savedItems;
+              renderQuestionsList(savedItems, dashSavedQuestionsContainer);
+            }
           }
         }
       }
@@ -786,7 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.className = 'topic-mastery-item';
       item.innerHTML = `
         <div class="mastery-header">
-          <span>${ts.icon} ${ts.topicName}</span>
+          <span>${ts.icon} ${escapeHtml(ts.topicName)}</span>
           <span style="color: ${ts.color || 'var(--accent-primary)'};">${ts.masteryPercentage}%</span>
         </div>
         <div class="mastery-progress-bg">
@@ -800,32 +861,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // 10. SEARCH BAR & LIVE FILTERING
   // ==========================================================================
-  globalSearchInput.addEventListener('input', () => {
-    const q = globalSearchInput.value.trim();
-    if (q.length > 0) {
-      searchClearBtn.classList.remove('hidden');
-    } else {
+  if (globalSearchInput) {
+    globalSearchInput.addEventListener('input', () => {
+      const q = globalSearchInput.value.trim();
+      if (searchClearBtn) {
+        if (q.length > 0) searchClearBtn.classList.remove('hidden');
+        else searchClearBtn.classList.add('hidden');
+      }
+
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        executeSearch(q);
+      }, 280);
+    });
+  }
+
+  if (headerSearchTopic) {
+    headerSearchTopic.addEventListener('change', () => {
+      executeSearch(globalSearchInput ? globalSearchInput.value.trim() : '');
+    });
+  }
+
+  if (searchClearBtn) {
+    searchClearBtn.addEventListener('click', () => {
+      if (globalSearchInput) globalSearchInput.value = '';
       searchClearBtn.classList.add('hidden');
-    }
-
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      executeSearch(q);
-    }, 280);
-  });
-
-  headerSearchTopic.addEventListener('change', () => {
-    executeSearch(globalSearchInput.value.trim());
-  });
-
-  searchClearBtn.addEventListener('click', () => {
-    globalSearchInput.value = '';
-    searchClearBtn.classList.add('hidden');
-    switchView('home');
-  });
+      switchView('home');
+    });
+  }
 
   async function executeSearch(query) {
-    const topic = headerSearchTopic.value;
+    const topic = headerSearchTopic ? headerSearchTopic.value : 'all';
 
     if (!query && topic === 'all') {
       if (activeView === 'search') switchView('home');
@@ -833,8 +899,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     switchView('search', 'Search');
-    searchResultsHeading.textContent = `🔍 Search: "${query || topic}"`;
-    searchResultsSubheading.textContent = `Searching across questions, answers, and blueprints...`;
+    if (searchResultsHeading) searchResultsHeading.textContent = `🔍 Search: "${query || topic}"`;
+    if (searchResultsSubheading) searchResultsSubheading.textContent = `Searching across questions, answers, and blueprints...`;
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&topic=${encodeURIComponent(topic)}`);
@@ -842,9 +908,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.success) {
         currentQuestions = data.results;
-        searchResultsHeading.textContent = `🔍 Results for: "${query || topic}" (${data.count} found)`;
-        searchResultsSubheading.textContent = `Found ${data.count} matching interview questions and model answers.`;
-        renderQuestionsList(data.results, searchResultsContainer);
+        if (searchResultsHeading) searchResultsHeading.textContent = `🔍 Results for: "${query || topic}" (${data.count} found)`;
+        if (searchResultsSubheading) searchResultsSubheading.textContent = `Found ${data.count} matching interview questions and model answers.`;
+        if (searchResultsContainer) renderQuestionsList(data.results, searchResultsContainer);
       }
     } catch (err) {
       console.error('Search error:', err);
@@ -856,154 +922,181 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   function updateAuthUI() {
     if (currentUser) {
-      btnOpenLogin.classList.add('hidden');
-      userProfileMenu.classList.remove('hidden');
-      userDisplayName.textContent = currentUser.name || 'Candidate';
-      userRoleBadge.textContent = currentUser.provider === 'google' ? 'Google Account' : (currentUser.email.endsWith('@gmail.com') ? 'Gmail Account' : 'Verified User');
-      dashUserAvatar.textContent = currentUser.avatar || '👨‍💻';
+      if (btnOpenLogin) btnOpenLogin.classList.add('hidden');
+      if (userProfileMenu) userProfileMenu.classList.remove('hidden');
+      if (userDisplayName) userDisplayName.textContent = currentUser.name || 'Candidate';
+      if (userRoleBadge) {
+        const isGmail = currentUser.email && currentUser.email.toLowerCase().endsWith('@gmail.com');
+        userRoleBadge.textContent = currentUser.provider === 'google' ? 'Google Account' : (isGmail ? 'Gmail Account' : 'Verified User');
+      }
+      if (dashUserAvatar) dashUserAvatar.textContent = currentUser.avatar || '👨‍💻';
     } else {
-      btnOpenLogin.classList.remove('hidden');
-      userProfileMenu.classList.add('hidden');
+      if (btnOpenLogin) btnOpenLogin.classList.remove('hidden');
+      if (userProfileMenu) userProfileMenu.classList.add('hidden');
     }
   }
 
-  // Open / Close Auth Modal
-  btnOpenLogin.addEventListener('click', () => {
-    authAlert.classList.add('hidden');
-    loginModal.classList.remove('hidden');
-  });
+  if (btnOpenLogin) {
+    btnOpenLogin.addEventListener('click', () => {
+      if (authAlert) authAlert.classList.add('hidden');
+      if (loginModal) loginModal.classList.remove('hidden');
+    });
+  }
 
-  modalCloseBtn.addEventListener('click', () => {
-    loginModal.classList.add('hidden');
-  });
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener('click', () => {
+      if (loginModal) loginModal.classList.add('hidden');
+    });
+  }
 
-  // Tab switching: Register vs Log In
-  tabSignup.addEventListener('click', () => {
-    tabSignup.classList.add('active');
-    tabSignin.classList.remove('active');
-    groupName.classList.remove('hidden');
-    groupRole.classList.remove('hidden');
-    btnAuthSubmit.textContent = 'Create Account with Gmail';
-    authAlert.classList.add('hidden');
-  });
+  if (tabSignup) {
+    tabSignup.addEventListener('click', () => {
+      tabSignup.classList.add('active');
+      if (tabSignin) tabSignin.classList.remove('active');
+      if (groupName) groupName.classList.remove('hidden');
+      if (groupRole) groupRole.classList.remove('hidden');
+      if (btnAuthSubmit) btnAuthSubmit.textContent = 'Create Account with Gmail';
+      if (authAlert) authAlert.classList.add('hidden');
+    });
+  }
 
-  tabSignin.addEventListener('click', () => {
-    tabSignin.classList.add('active');
-    tabSignup.classList.remove('active');
-    groupName.classList.add('hidden');
-    groupRole.classList.add('hidden');
-    btnAuthSubmit.textContent = 'Log In';
-    authAlert.classList.add('hidden');
-  });
+  if (tabSignin) {
+    tabSignin.addEventListener('click', () => {
+      tabSignin.classList.add('active');
+      if (tabSignup) tabSignup.classList.remove('active');
+      if (groupName) groupName.classList.add('hidden');
+      if (groupRole) groupRole.classList.add('hidden');
+      if (btnAuthSubmit) btnAuthSubmit.textContent = 'Log In';
+      if (authAlert) authAlert.classList.add('hidden');
+    });
+  }
 
-  // Direct 1-Click Sign-in with Google
-  btnGoogleAuth.addEventListener('click', async () => {
-    try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'candidate.google@gmail.com',
-          name: 'Google Candidate',
-          avatar: '🌐'
-        })
-      });
+  if (btnGoogleAuth) {
+    btnGoogleAuth.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'candidate.google@gmail.com',
+            name: 'Google Candidate',
+            avatar: '🌐'
+          })
+        });
 
-      const data = await res.json();
-      if (data.success) {
-        currentUser = data.user;
-        localStorage.setItem('study_user', JSON.stringify(currentUser));
-        updateAuthUI();
-        loginModal.classList.add('hidden');
-        showToast('Signed in with Google successfully!');
+        const data = await res.json();
+        if (data.success) {
+          currentUser = data.user;
+          try {
+            localStorage.setItem('study_user', JSON.stringify(currentUser));
+          } catch (e) {}
+          updateAuthUI();
+          if (loginModal) loginModal.classList.add('hidden');
+          showToast('Signed in with Google successfully!');
+        }
+      } catch (err) {
+        alert('Google authentication error: ' + err.message);
       }
-    } catch (err) {
-      alert('Google authentication error: ' + err.message);
-    }
-  });
+    });
+  }
 
-  // Quick Demo Account Login
-  btnDemoLogin.addEventListener('click', async () => {
-    authEmail.value = 'candidate@gmail.com';
-    authPassword.value = 'password123';
-    btnAuthSubmit.click();
-  });
+  if (btnDemoLogin) {
+    btnDemoLogin.addEventListener('click', async () => {
+      if (authEmail) authEmail.value = 'candidate@gmail.com';
+      if (authPassword) authPassword.value = 'password123';
+      if (btnAuthSubmit) btnAuthSubmit.click();
+    });
+  }
 
-  // Form Submit: Register or Log in
-  authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const isRegister = tabSignup.classList.contains('active');
-    const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isRegister = tabSignup ? tabSignup.classList.contains('active') : true;
+      const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
 
-    const payload = {
-      email: authEmail.value.trim(),
-      password: authPassword.value,
-      name: authName.value.trim(),
-      targetRole: authTargetRole.value
-    };
+      const payload = {
+        email: authEmail ? authEmail.value.trim() : '',
+        password: authPassword ? authPassword.value : '',
+        name: authName ? authName.value.trim() : '',
+        targetRole: authTargetRole ? authTargetRole.value : 'Full Stack Developer'
+      };
 
-    authAlert.classList.add('hidden');
+      if (authAlert) authAlert.classList.add('hidden');
 
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Authentication failed');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Authentication failed');
 
-      currentUser = data.user;
-      localStorage.setItem('study_user', JSON.stringify(currentUser));
-      updateAuthUI();
-      loginModal.classList.add('hidden');
-      showToast(isRegister ? 'Account created! Welcome to Get Ready for Study.' : 'Signed in successfully!');
+        currentUser = data.user;
+        try {
+          localStorage.setItem('study_user', JSON.stringify(currentUser));
+        } catch (e) {}
 
-    } catch (err) {
-      authAlert.className = 'auth-alert error';
-      authAlert.textContent = err.message;
-      authAlert.classList.remove('hidden');
-    }
-  });
+        updateAuthUI();
+        if (loginModal) loginModal.classList.add('hidden');
+        showToast(isRegister ? 'Account created! Welcome to Get Ready for Study.' : 'Signed in successfully!');
 
-  // Profile Modal
-  btnOpenProfile.addEventListener('click', () => {
-    if (!currentUser) return;
-    modalProfileName.textContent = currentUser.name || 'Candidate';
-    modalProfileEmail.textContent = currentUser.email;
-    profileProviderBadge.textContent = currentUser.provider ? currentUser.provider.toUpperCase() : 'EMAIL';
-    profileRoleVal.textContent = currentUser.role || 'Full Stack Engineer';
-    profileSavedVal.textContent = bookmarkedIds.size.toString();
-    profileJoinedVal.textContent = currentUser.joinedDate || 'Sept 2026';
-    profileModal.classList.remove('hidden');
-  });
+      } catch (err) {
+        if (authAlert) {
+          authAlert.className = 'auth-alert error';
+          authAlert.textContent = err.message;
+          authAlert.classList.remove('hidden');
+        }
+      }
+    });
+  }
 
-  profileCloseBtn.addEventListener('click', () => {
-    profileModal.classList.add('hidden');
-  });
+  if (btnOpenProfile) {
+    btnOpenProfile.addEventListener('click', () => {
+      if (!currentUser) return;
+      if (modalProfileName) modalProfileName.textContent = currentUser.name || 'Candidate';
+      if (modalProfileEmail) modalProfileEmail.textContent = currentUser.email || '';
+      if (profileProviderBadge) profileProviderBadge.textContent = currentUser.provider ? currentUser.provider.toUpperCase() : 'EMAIL';
+      if (profileRoleVal) profileRoleVal.textContent = currentUser.role || 'Full Stack Engineer';
+      if (profileSavedVal) profileSavedVal.textContent = bookmarkedIds.size.toString();
+      if (profileJoinedVal) profileJoinedVal.textContent = currentUser.joinedDate || 'Sept 2026';
+      if (profileModal) profileModal.classList.remove('hidden');
+    });
+  }
 
-  btnProfileToDashboard.addEventListener('click', () => {
-    profileModal.classList.add('hidden');
-    switchView('dashboard');
-  });
+  if (profileCloseBtn) {
+    profileCloseBtn.addEventListener('click', () => {
+      if (profileModal) profileModal.classList.add('hidden');
+    });
+  }
+
+  if (btnProfileToDashboard) {
+    btnProfileToDashboard.addEventListener('click', () => {
+      if (profileModal) profileModal.classList.add('hidden');
+      switchView('dashboard');
+    });
+  }
 
   function performLogout() {
     currentUser = null;
-    localStorage.removeItem('study_user');
+    try {
+      localStorage.removeItem('study_user');
+    } catch (e) {}
     updateAuthUI();
     if (profileModal) profileModal.classList.add('hidden');
     showToast('Signed out successfully.');
     if (activeView === 'dashboard') switchView('home');
   }
 
-  btnLogout.addEventListener('click', performLogout);
-  btnProfileLogout.addEventListener('click', performLogout);
+  if (btnLogout) btnLogout.addEventListener('click', performLogout);
+  if (btnProfileLogout) btnProfileLogout.addEventListener('click', performLogout);
 
   // ==========================================================================
   // 12. CAREER HUB ROADMAPS LOADER
   // ==========================================================================
   async function loadCareerRoadmaps() {
+    if (!careerCardsContainer) return;
     try {
       const res = await fetch('/api/career/roadmaps');
       const data = await res.json();
@@ -1043,43 +1136,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // 13. EXPORT, PRINT, AND COPY ALL
   // ==========================================================================
-  btnExportMd.addEventListener('click', async () => {
-    if (currentQuestions.length === 0) return;
-    try {
-      const res = await fetch('/api/export/markdown', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questions: currentQuestions, meta: currentMeta })
-      });
-      const data = await res.json();
-      if (data.success) {
-        const blob = new Blob([data.markdown], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `interview-prep-${Date.now()}.md`;
-        a.click();
+  if (btnExportMd) {
+    btnExportMd.addEventListener('click', async () => {
+      if (currentQuestions.length === 0) return;
+      try {
+        const res = await fetch('/api/export/markdown', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions: currentQuestions, meta: currentMeta })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const blob = new Blob([data.markdown], { type: 'text/markdown' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `interview-prep-${Date.now()}.md`;
+          a.click();
+        }
+      } catch (err) {
+        alert('Markdown export failed');
       }
-    } catch (err) {
-      alert('Markdown export failed');
-    }
-  });
-
-  btnCopyAll.addEventListener('click', () => {
-    if (currentQuestions.length === 0) return;
-    const allText = currentQuestions.map((q, i) =>
-      `Question ${i + 1}: ${q.question}\nTopic: ${q.topicName || q.topic}\n\nModel Answer:\n${q.modelAnswer}\n\nBlueprint:\n${q.answerBlueprint}\n-----------------------------------\n`
-    ).join('\n');
-
-    navigator.clipboard.writeText(allText).then(() => {
-      btnCopyAll.textContent = '✅ Copied!';
-      setTimeout(() => { btnCopyAll.textContent = '📋 Copy All'; }, 2000);
     });
-  });
+  }
 
-  btnPrint.addEventListener('click', () => {
-    window.print();
-  });
+  if (btnCopyAll) {
+    btnCopyAll.addEventListener('click', () => {
+      if (currentQuestions.length === 0) return;
+      const allText = currentQuestions.map((q, i) =>
+        `Question ${i + 1}: ${q.question}\nTopic: ${q.topicName || q.topic}\n\nModel Answer:\n${q.modelAnswer}\n\nBlueprint:\n${q.answerBlueprint}\n-----------------------------------\n`
+      ).join('\n');
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(allText).then(() => {
+          btnCopyAll.textContent = '✅ Copied!';
+          setTimeout(() => { btnCopyAll.textContent = '📋 Copy All'; }, 2000);
+        });
+      }
+    });
+  }
+
+  if (btnPrint) {
+    btnPrint.addEventListener('click', () => {
+      window.print();
+    });
+  }
 
   // ==========================================================================
   // 14. HELPER UTILITIES
@@ -1113,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str
+    return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
