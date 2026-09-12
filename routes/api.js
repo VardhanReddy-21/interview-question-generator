@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const questionGenerator = require('../services/questionGenerator');
 const answerEvaluator = require('../services/answerEvaluator');
+const resumeEvaluator = require('../services/resumeEvaluator');
 const { TOPICS, QUESTION_BANK, CAREER_ROADMAPS } = require('../services/questionBank');
 
 // In-memory persistent state for registered users and bookmarks
@@ -469,6 +470,18 @@ router.post('/export/markdown', (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, error: "Markdown export failed." });
+  }
+});
+
+// POST /api/resume/analyze - ATS Resume analysis & scoring
+router.post('/resume/analyze', (req, res) => {
+  try {
+    const { resumeText, targetRole, jdText } = req.body;
+    const result = resumeEvaluator.evaluate({ resumeText, targetRole, jdText });
+    res.json(result);
+  } catch (err) {
+    console.error("Resume Evaluation Error:", err);
+    res.status(500).json({ success: false, error: "Failed to analyze resume." });
   }
 });
 

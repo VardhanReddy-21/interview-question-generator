@@ -1298,7 +1298,1191 @@ class SimpleHashTable {
       "What makes a good hash function (uniform distribution, deterministic, fast)?",
       "What is consistent hashing and where is it used in distributed systems?"
     ],
-    tags: ["Data Structures", "Hash Table", "Hashing", "Collisions", "Algorithms"]
+  },
+
+  // ==========================================
+  // ADDITIONAL ADVANCED QUESTIONS & CODES
+  // ==========================================
+  {
+    id: "c-04",
+    topic: "c",
+    topicName: "C Programming",
+    role: "Embedded / Systems / C Developer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "How do Function Pointers work in C, and how are they used to implement callbacks and state machines?",
+    modelAnswer: `In C, a **function pointer** stores the memory address of executable code (a function in the text segment), allowing functions to be passed as arguments, returned from other functions, and stored in lookup arrays.
+
+**Syntax:** \`return_type (*pointer_name)(parameter_types);\`
+
+**Production Use Cases:**
+1. **Callbacks:** Passing a custom comparison function to standard library utilities like \`qsort()\`.
+2. **Event-Driven Architectures:** Registering hardware interrupt or GUI click handlers.
+3. **Dispatch Tables / State Machines:** Replacing lengthy \`switch/case\` ladders with O(1) array lookup tables.`,
+    interviewerIntent: "Assesses understanding of the C memory model (code/text segment), functional dispatch patterns, and callback architectures.",
+    answerBlueprint: "Define function pointer syntax with parentheses rule (*fp). Show callback example with qsort. Demonstrate a dispatch table replacing switch-case.",
+    codeSnippet: `#include <stdio.h>
+
+// 1. Define operation functions
+int add(int a, int b) { return a + b; }
+int multiply(int a, int b) { return a * b; }
+
+// 2. Higher-order function receiving function pointer callback
+int compute(int x, int y, int (*op)(int, int)) {
+    return op(x, y); // Invoke callback
+}
+
+int main() {
+    // 3. Dispatch Table (Array of Function Pointers)
+    int (*operations[2])(int, int) = {add, multiply};
+
+    printf("Add: %d\\n", compute(10, 5, operations[0]));      // 15
+    printf("Multiply: %d\\n", compute(10, 5, operations[1])); // 50
+    return 0;
+}`,
+    complexity: "Time: O(1) dispatch lookup | Space: sizeof(pointer) = 8 bytes on 64-bit CPU",
+    commonMistakes: "Omitting parentheses around (*op) e.g., int *op(int, int) which declares a function returning an int pointer instead of a function pointer.",
+    followUpQuestions: [
+      "How do typedefs simplify function pointer syntax in C?",
+      "Can you dereference a function pointer or does the C compiler implicitly do it?"
+    ],
+    tags: ["C", "Function Pointers", "Callbacks", "State Machine", "Architecture"]
+  },
+  {
+    id: "cpp-03",
+    topic: "cpp",
+    topicName: "C++",
+    role: "C++ Software Engineer",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "mid",
+    question: "What are Move Semantics and Rvalue References (T&&) in C++11, and how does std::move eliminate expensive deep copies?",
+    modelAnswer: `Before C++11, passing or returning large objects (like \`std::vector\` or \`std::string\`) frequently triggered **expensive deep memory allocations and copies**. 
+
+**Move Semantics:**
+Allows the resources (pointers to heap memory, file descriptors, socket handles) of a temporary object (an **rvalue**) to be "stolen" or transferred directly into a new object in **O(1) time**, without copying the underlying data.
+
+1. **Lvalue vs Rvalue:**
+   - **Lvalue:** An object with an identifiable memory address (e.g. named variables like \`x\`).
+   - **Rvalue:** A temporary value that does not persist beyond the expression that created it (e.g. literals like \`42\` or temporary objects returned by value).
+2. **Rvalue Reference (\`T&&\`):** A reference type that binds specifically to temporary rvalues.
+3. **\`std::move\`:** Does NOT move anything itself! It is simply an unconditional cast converting an lvalue into an rvalue reference (\`static_cast<T&&>(lval)\`), making it eligible for the move constructor.`,
+    interviewerIntent: "Checks mastery of modern C++ performance optimization, value categories, and move constructor design.",
+    answerBlueprint: "Distinguish lvalues vs rvalues. Explain move constructor stealing pointers. Clarify that std::move is just a static_cast to rvalue reference.",
+    codeSnippet: `#include <iostream>
+#include <vector>
+#include <utility>
+
+class Buffer {
+public:
+    int* data;
+    size_t size;
+
+    Buffer(size_t s) : size(s), data(new int[s]) {}
+
+    // Move Constructor: Steals internal pointer in O(1) time!
+    Buffer(Buffer&& other) noexcept : data(other.data), size(other.size) {
+        other.data = nullptr; // Leave source in valid destructible state
+        other.size = 0;
+        std::cout << "Moved in O(1) time without copying memory!\\n";
+    }
+
+    ~Buffer() { delete[] data; }
+};
+
+int main() {
+    Buffer b1(1000000); // 1 Million elements on heap
+    Buffer b2 = std::move(b1); // Move constructor called! Zero bytes copied.
+    return 0;
+}`,
+    complexity: "Copy constructor: O(N) allocation and copying | Move constructor: O(1) pointer swap",
+    commonMistakes: "Accessing an object after calling std::move on it; forgetting noexcept on move constructors (which prevents std::vector from using them during reallocation).",
+    followUpQuestions: [
+      "Why should move constructors and move assignment operators always be marked noexcept?",
+      "What is Perfect Forwarding (std::forward) and universal references?"
+    ],
+    tags: ["C++", "Move Semantics", "Rvalue", "std::move", "Modern C++"]
+  },
+  {
+    id: "py-04",
+    topic: "python",
+    topicName: "Python",
+    role: "Python / Backend Engineer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "How do Python Context Managers and the 'with' statement work under the hood?",
+    modelAnswer: `The \`with\` statement in Python provides safe, deterministic **resource management** (files, database connections, locks, network sockets) ensuring cleanup operations occur even if exceptions are raised.
+
+**Protocol Mechanism:**
+Any class implementing two special dunder methods satisfies the **Context Manager Protocol**:
+1. **\`__enter__(self)\`:** Executed before the with-block runs. Its return value is bound to the target variable after the \`as\` keyword.
+2. **\`__exit__(self, exc_type, exc_val, exc_tb)\`:** Executed after the with-block completes or raises an exception.
+   - If no exception occurred: all three arguments are \`None\`.
+   - If an exception occurred: arguments contain exception details. Returning \`True\` suppresses the exception; returning \`False\` (or \`None\`) propagates the exception upward.
+
+**Alternative:** The \`@contextlib.contextmanager\` decorator converts a generator function with a single \`yield\` into a context manager.`,
+    interviewerIntent: "Assesses understanding of Python's resource lifecycle, exception safety, and pythonic API design.",
+    answerBlueprint: "Explain __enter__ and __exit__ methods. Detail exception arguments in __exit__ and how returning True suppresses errors. Show both class-based and contextlib approaches.",
+    codeSnippet: `import time
+from contextlib import contextmanager
+
+# 1. Custom Timer Context Manager using Class Protocol
+class TimerContext:
+    def __enter__(self):
+        self.start = time.perf_counter()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        duration = time.perf_counter() - self.start
+        print(f"Block executed in {duration:.4f}s")
+        return False # Propagate any exceptions
+
+# 2. Database Connection Guard using contextlib
+@contextmanager
+def db_transaction():
+    print("BEGIN TRANSACTION")
+    try:
+        yield "DB_CONNECTION_HANDLE"
+        print("COMMIT")
+    except Exception as e:
+        print(f"ROLLBACK due to: {e}")
+        raise`,
+    complexity: "Guarantees resource release (O(1)) without manual try-finally blocks.",
+    commonMistakes: "Suppressing all exceptions blindly by always returning True in __exit__; forgetting to yield inside a @contextmanager generator.",
+    followUpQuestions: [
+      "How does ExitStack in contextlib help manage a dynamic number of context managers?",
+      "What is an async context manager (__aenter__ and __aexit__) in asyncio?"
+    ],
+    tags: ["Python", "Context Managers", "with statement", "Resources", "Pythonic"]
+  },
+  {
+    id: "java-03",
+    topic: "java",
+    topicName: "Java",
+    role: "Java Backend Engineer",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "mid",
+    question: "What are the differences between synchronized, ReentrantLock, and volatile in Java concurrency?",
+    modelAnswer: `Java provides multiple concurrency primitives with distinct synchronization, visibility, and locking guarantees:
+
+1. **\`volatile\` Keyword:**
+   - Enforces **Memory Visibility**: reads and writes bypass CPU L1/L2 caches and interact directly with main memory.
+   - Prevents instruction reordering (happens-before relationship).
+   - **Limitation:** Does **NOT guarantee atomicity**! \`count++\` on a volatile integer still causes race conditions because it is 3 discrete operations (read, increment, write).
+
+2. **\`synchronized\` Keyword (Implicit Monitor Lock):**
+   - Built into Java language. Locks on the object's intrinsic monitor.
+   - Automatically acquires and releases locks (even on exceptions).
+   - **Limitations:** Cannot interrupt waiting threads, cannot set lock timeouts, and lacks fairness options.
+
+3. **\`ReentrantLock\` (java.util.concurrent.locks):**
+   - Explicit locking class providing advanced capabilities:
+     - \`tryLock(timeout, unit)\`: Prevents deadlocks by giving up if lock is unavailable.
+     - \`lockInterruptibly()\`: Responds to thread interruptions.
+     - **Fairness:** Can guarantee FIFO lock acquisition among waiting threads.
+     - Multiple condition variables via \`newCondition()\`.
+   - **Requirement:** Must always be released in a \`finally\` block!`,
+    interviewerIntent: "Differentiates basic multi-threading knowledge from advanced lock-free and reentrant concurrency engineering in Java.",
+    answerBlueprint: "Compare visibility vs atomicity. Explain why volatile count++ fails. Contrast synchronized (built-in, automatic) with ReentrantLock (tryLock, timeouts, fairness, finally release).",
+    codeSnippet: `import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
+
+public class ConcurrencyDemo {
+    private volatile boolean running = true; // Visibility guarantee
+    private final ReentrantLock lock = new ReentrantLock(true); // Fair lock
+    private int counter = 0;
+
+    public void safeIncrement() {
+        try {
+            // Attempt to acquire lock for 1 second to avoid deadlock
+            if (lock.tryLock(1, TimeUnit.SECONDS)) {
+                try {
+                    counter++; // Atomically protected
+                } finally {
+                    lock.unlock(); // Mandatory in finally block!
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+}`,
+    complexity: "volatile: Zero lock overhead | synchronized: Biased/Lightweight lock optimized by JVM | ReentrantLock: Predictable low overhead under high contention",
+    commonMistakes: "Forgetting to unlock ReentrantLock in a finally block (causes permanent deadlock); assuming volatile makes compound operations like counter++ thread-safe.",
+    followUpQuestions: [
+      "What are AtomicInteger and Compare-And-Swap (CAS) operations in java.util.concurrent.atomic?",
+      "What is Lock Striping in ConcurrentHashMap?"
+    ],
+    tags: ["Java", "Concurrency", "Multithreading", "ReentrantLock", "Volatile"]
+  },
+  {
+    id: "sql-03",
+    topic: "sql",
+    topicName: "SQL",
+    role: "Database Engineer / Backend Developer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "What are SQL Window Functions, and what is the difference between ROW_NUMBER(), RANK(), and DENSE_RANK()?",
+    modelAnswer: `**Window Functions** perform calculations across a specified set of table rows related to the current row (a "window"), **without collapsing rows into a single summary row** (unlike \`GROUP BY\`).
+
+**The OVER() Clause:**
+- \`PARTITION BY\`: Divides rows into groups (e.g. partition by department).
+- \`ORDER BY\`: Sorts rows within each partition.
+
+**ROW_NUMBER() vs RANK() vs DENSE_RANK():**
+Suppose two employees in the same department share the exact same salary of $100k, and one employee earns $90k:
+
+1. **\`ROW_NUMBER()\`: Assigns a strict unique sequential integer** to every row regardless of ties:
+   - Rankings: \`1, 2, 3\` (ties broken arbitrarily).
+2. **\`RANK()\`: Assigns the same rank to ties, but SKIPS subsequent ranks**:
+   - Rankings: \`1, 1, 3\` (rank 2 is skipped!).
+3. **\`DENSE_RANK()\`: Assigns the same rank to ties, WITHOUT skipping numbers**:
+   - Rankings: \`1, 1, 2\` (no gap in rank numbers).`,
+    interviewerIntent: "Tests advanced SQL analytical reporting, deduplication queries, and top-N-per-category query patterns.",
+    answerBlueprint: "Explain that window functions do not collapse rows. Compare ROW_NUMBER (1,2,3) vs RANK (1,1,3) vs DENSE_RANK (1,1,2) on tie values. Show top-N per department example with CTE.",
+    codeSnippet: `-- Find the 2nd Highest Earner in each department using DENSE_RANK()
+WITH RankedSalaries AS (
+    SELECT 
+        employee_id,
+        name,
+        department_id,
+        salary,
+        DENSE_RANK() OVER (
+            PARTITION BY department_id 
+            ORDER BY salary DESC
+        ) AS rank_in_dept
+    FROM employees
+)
+SELECT department_id, name, salary
+FROM RankedSalaries
+WHERE rank_in_dept = 2;`,
+    complexity: "Window functions execute during step 6 of query processing (after WHERE and GROUP BY, before final ORDER BY).",
+    commonMistakes: "Attempting to filter window functions directly in the WHERE clause (e.g. WHERE ROW_NUMBER() = 1) without using a CTE or subquery.",
+    followUpQuestions: [
+      "What are LEAD() and LAG() window functions and how are they used in financial delta queries?",
+      "What is the ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW window frame specification?"
+    ],
+    tags: ["SQL", "Window Functions", "DENSE_RANK", "CTEs", "Analytics"]
+  },
+  {
+    id: "mysql-03",
+    topic: "mysql",
+    topicName: "MySQL",
+    role: "Database Administrator / Backend Engineer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "What is the Leftmost Prefix Rule for composite indexes in MySQL, and how do you design multi-column indexes?",
+    modelAnswer: `A **composite index** (multi-column index) in MySQL is an index on two or more columns (e.g., \`INDEX(a, b, c)\`).
+
+**The Leftmost Prefix Rule:**
+MySQL can use a composite index only if query conditions filter on the columns in order starting from the **leftmost column**:
+- \`WHERE a = 1\` -> Uses index on column \`a\`.
+- \`WHERE a = 1 AND b = 2\` -> Uses index on columns \`a\` and \`b\`.
+- \`WHERE a = 1 AND b = 2 AND c = 3\` -> Uses index on all three columns.
+- \`WHERE b = 2 AND c = 3\` -> **CANNOT use the index!** Column \`a\` is missing from the leftmost position.
+- \`WHERE a = 1 AND c = 3\` -> Uses index for \`a\`, but cannot use \`c\` directly because \`b\` was skipped.
+
+**Rule of Thumb for Column Order:**
+Place columns with **highest selectivity / equality conditions first**, followed by range condition columns (\`>\`, \`<\`, \`BETWEEN\`), because range conditions prevent subsequent index columns from being utilized.`,
+    interviewerIntent: "Evaluates production index design and query optimization for high-throughput MySQL applications.",
+    answerBlueprint: "Explain B+ Tree sorting in composite indexes. Outline the leftmost rule with valid and invalid WHERE examples. Explain how range conditions stop index traversal.",
+    codeSnippet: `-- Create composite index: (status, created_at, user_id)
+CREATE INDEX idx_orders_status_date_user ON orders (status, created_at, user_id);
+
+-- FAST: Uses leftmost prefix (status = equality, created_at = range)
+SELECT user_id, status FROM orders 
+WHERE status = 'SHIPPED' AND created_at >= '2026-01-01';
+
+-- SLOW: Fails Leftmost Rule (status missing -> triggers Full Table Scan)
+SELECT * FROM orders WHERE created_at >= '2026-01-01';`,
+    complexity: "Composite B+ Tree lookup: O(log N) traversal for valid prefixes | Missing prefix collapses to O(N) table scan",
+    commonMistakes: "Creating separate single-column indexes on (a) and (b) expecting MySQL to combine them as effectively as a composite index (a, b).",
+    followUpQuestions: [
+      "What is Index Condition Pushdown (ICP) in MySQL?",
+      "How do prefix indexes work on long VARCHAR or TEXT columns?"
+    ],
+    tags: ["MySQL", "Indexes", "Leftmost Prefix", "Performance", "Query Optimization"]
+  },
+  {
+    id: "html-03",
+    topic: "html",
+    topicName: "HTML",
+    role: "Frontend Developer",
+    category: "technical",
+    difficulty: "easy",
+    experienceLevel: "entry",
+    question: "Compare localStorage, sessionStorage, Cookies, and IndexedDB in modern web browsers.",
+    modelAnswer: `Web applications use different client-side storage mechanisms depending on capacity, persistence, and security requirements:
+
+1. **\`localStorage\`:**
+   - **Capacity:** ~5MB to 10MB per origin.
+   - **Lifetime:** Persistent until explicitly cleared by user or script.
+   - **Scope:** Shared across all tabs/windows of the same origin.
+   - **Access:** Synchronous JavaScript API.
+
+2. **\`sessionStorage\`:**
+   - **Capacity:** ~5MB.
+   - **Lifetime:** Scoped to the **current browser tab session**; deleted when tab is closed.
+   - **Scope:** Independent per tab.
+
+3. **\`Cookies\`:**
+   - **Capacity:** Tiny (~4KB per cookie).
+   - **Automatic Transmission:** Sent with **every HTTP request** to the server header.
+   - **Security Flags:** Supports \`HttpOnly\` (prevents XSS theft via JavaScript) and \`SameSite=Strict\` / \`Secure\` (prevents CSRF attacks). Essential for session tokens.
+
+4. **\`IndexedDB\`:**
+   - **Capacity:** Large (hundreds of MBs to GBs).
+   - **Architecture:** Asynchronous, transactional NoSQL object store for large structured datasets, files, and offline PWAs.`,
+    interviewerIntent: "Assesses web security awareness (XSS, CSRF), offline storage strategies, and browser capabilities.",
+    answerBlueprint: "Compare capacity, expiration, server transmission, and security flags (HttpOnly cookies for JWT vs localStorage XSS risks).",
+    codeSnippet: `// 1. Safe localStorage storage with try-catch (guards against Safari Private mode quota errors)
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        console.warn("Storage quota exceeded or private browsing restricted", e);
+    }
+}
+
+// 2. Cookie with security attributes (Server-Side Set-Cookie header)
+// Set-Cookie: token=abc123; Secure; HttpOnly; SameSite=Strict; Path=/;`,
+    complexity: "localStorage: Synchronous (can block UI thread on large keys) | IndexedDB: Asynchronous non-blocking",
+    commonMistakes: "Storing sensitive authentication JWT tokens in localStorage (vulnerable to XSS attacks) instead of secure HttpOnly cookies.",
+    followUpQuestions: [
+      "Why is storing auth tokens in localStorage vulnerable to XSS?",
+      "What is the Storage Quota API in modern browsers?"
+    ],
+    tags: ["HTML", "Storage", "Cookies", "localStorage", "Web Security"]
+  },
+  {
+    id: "css-03",
+    topic: "css",
+    topicName: "CSS",
+    role: "Frontend / UI Developer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "How is CSS Specificity calculated, and how do Cascade Layers (@layer) solve specificity wars?",
+    modelAnswer: `When multiple conflicting CSS rules match the same HTML element, the browser resolves the conflict using **Specificity** and the **Cascade Algorithm**.
+
+**Specificity Hierarchy (The 4-Column Metric):**
+1. **Inline Styles (\`style="..."\`):** Score: **(1, 0, 0, 0)**
+2. **ID Selectors (\`#header\`):** Score: **(0, 1, 0, 0)**
+3. **Class Selectors, Attributes & Pseudo-classes (\`.btn\`, \`[type="text"]\`, \`:hover\`):** Score: **(0, 0, 1, 0)**
+4. **Element Selectors & Pseudo-elements (\`div\`, \`p\`, \`::before\`):** Score: **(0, 0, 0, 1)**
+5. **Universal (\`*\`), Combinators (\`>\`, \`+\`), and \`:where()\`: Zero specificity (0, 0, 0, 0).
+
+**The Role of \`!important\`:**
+Overrides all normal specificity calculations. Overusing it causes unmaintainable "specificity wars".
+
+**Modern Solution: Cascade Layers (\`@layer\` in CSS):**
+Allows developers to define the explicit priority order of CSS rules (e.g. reset < framework < utilities) regardless of individual selector specificity!`,
+    interviewerIntent: "Tests CSS architecture discipline, avoidance of !important hacks, and modern CSS layout standards.",
+    answerBlueprint: "Explain the 4-part tuple (Inline, ID, Class, Element). Show specificity calculation. Introduce @layer as the modern architecture solution.",
+    codeSnippet: `/* Specificity Comparison */
+/* Score: (0, 0, 0, 1) */
+button { background: gray; }
+
+/* Score: (0, 0, 1, 1) - WINS over button */
+button.primary { background: blue; }
+
+/* Score: (0, 1, 0, 0) - WINS over button.primary */
+#submit-btn { background: red; }
+
+/* Modern Architecture: Cascade Layers eliminate specificity battles */
+@layer reset, framework, components, utilities;
+
+@layer components {
+    .btn { padding: 12px; } /* Clean, easily overridden by utilities layer */
+}`,
+    complexity: "Browser calculates specificity during style computation step before layout.",
+    commonMistakes: "Using !important to patch CSS bugs; believing 10 classes can override a single ID selector (columns never roll over into higher tiers).",
+    followUpQuestions: [
+      "What is the difference between :is() and :where() pseudo-classes regarding specificity?",
+      "How does CSS inheritance affect specificity calculation?"
+    ],
+    tags: ["CSS", "Specificity", "Cascade", "Cascade Layers", "BEM"]
+  },
+  {
+    id: "js-03",
+    topic: "javascript",
+    topicName: "JavaScript",
+    role: "Full Stack / JavaScript Developer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "What is the difference between Promise.all(), Promise.allSettled(), Promise.race(), and Promise.any() in JavaScript?",
+    modelAnswer: `JavaScript provides 4 concurrency methods to handle collections of Promises in parallel:
+
+1. **\`Promise.all(promises)\` (Fail-Fast):**
+   - Resolves when **ALL** promises resolve, returning an array of resolved values.
+   - **Rejects immediately** if any single promise rejects, discarding the rest.
+
+2. **\`Promise.allSettled(promises)\` (Resilient Batching):**
+   - Waits until **ALL** promises have settled (either resolved OR rejected).
+   - Never fails fast. Returns an array of objects: \`{ status: "fulfilled", value }\` or \`{ status: "rejected", reason }\`. Best for independent batch operations.
+
+3. **\`Promise.race(promises)\` (First Settler Wins):**
+   - Returns the result of the **first promise to settle** (whether it resolved or rejected).
+
+4. **\`Promise.any(promises)\` (First Success Wins):**
+   - Resolves as soon as the **first promise resolves successfully**.
+   - If all promises reject, it rejects with an \`AggregateError\`.`,
+    interviewerIntent: "Assesses production error handling, network concurrency, and resilience patterns in asynchronous JavaScript.",
+    answerBlueprint: "Compare Promise.all (fail fast) vs Promise.allSettled (never fails fast, status array) vs Promise.race (first to settle) vs Promise.any (first to resolve).",
+    codeSnippet: `// Practical Example: Promise.allSettled for Resilient Multi-API Aggregation
+async function fetchDashboardMetrics() {
+    const results = await Promise.allSettled([
+        fetch('/api/user/profile').then(r => r.json()),
+        fetch('/api/user/analytics').then(r => r.json()),
+        fetch('/api/notifications').then(r => r.json())
+    ]);
+
+    const profile = results[0].status === 'fulfilled' ? results[0].value : null;
+    const analytics = results[1].status === 'fulfilled' ? results[1].value : [];
+    
+    console.log("Dashboard assembled safely even if notifications API failed!");
+    return { profile, analytics };
+}`,
+    complexity: "All execute asynchronously in parallel without blocking main thread execution.",
+    commonMistakes: "Using Promise.all for independent requests where one failing third-party API breaks the entire application screen.",
+    followUpQuestions: [
+      "What is unhandled promise rejection and how do you handle it in Node.js vs Browser?",
+      "How do you implement an async retry utility with exponential backoff in JavaScript?"
+    ],
+    tags: ["JavaScript", "Promises", "Async", "Concurrency", "Error Handling"]
+  },
+  {
+    id: "node-03",
+    topic: "nodejs",
+    topicName: "Node.js",
+    role: "Backend Engineer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "How does the Express.js Middleware execution pipeline work, and how should centralized error-handling middleware be structured?",
+    modelAnswer: `In **Express.js**, middleware functions form a sequential pipeline (Chain of Responsibility pattern) that intercepts and processes incoming HTTP requests before returning a response.
+
+**Execution Flow:**
+- Middleware signature: \`function(req, res, next)\`.
+- Each middleware can:
+  1. Execute code (logging, rate limiting, authentication).
+  2. Mutate \`req\` and \`res\` objects (e.g. \`req.user = decodedToken\`).
+  3. Terminate the request-response cycle (\`res.status(200).json(...)\`).
+  4. Call \`next()\` to pass control to the next middleware in line.
+
+**Error-Handling Middleware:**
+- Defined with **strictly 4 arguments**: \`function(err, req, res, next)\`.
+- Express inspects the \`fn.length\` parameter count. Only 4-parameter functions are treated as error handlers!
+- When any previous middleware calls \`next(err)\`, Express skips all remaining standard middlewares and jumps directly to the error-handling middleware.`,
+    interviewerIntent: "Evaluates backend architecture design, error propagation, and defensive security middleware in Express.",
+    answerBlueprint: "Explain (req, res, next) pipeline. Detail the strict 4-argument signature of error middleware (err, req, res, next). Show placement at the bottom of the route stack.",
+    codeSnippet: `const express = require('express');
+const app = express();
+
+// 1. Authentication Middleware
+const requireAuth = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return next(new Error("Unauthorized access")); // Jumps to error handler
+    }
+    req.user = { id: 101 };
+    next(); // Proceed to route
+};
+
+// 2. Centralized 4-Argument Error Handler (Placed at very end of app!)
+app.use((err, req, res, next) => {
+    console.error("[Centralized Error Logger]:", err.message);
+    res.status(err.status || 500).json({
+        success: false,
+        error: err.message || "Internal Server Error"
+    });
+});`,
+    complexity: "Middleware adds negligible O(1) function call overhead per step in the chain.",
+    commonMistakes: "Omitting next() in middleware causing client requests to hang indefinitely; omitting the unused next parameter in error handlers (making Express treat it as standard 3-arg middleware).",
+    followUpQuestions: [
+      "What happens in Express 5 regarding rejected promises in async middleware?",
+      "How do helmet and cors middlewares protect Express applications?"
+    ],
+    tags: ["Node.js", "Express", "Middleware", "Error Handling", "Backend"]
+  },
+  {
+    id: "react-03",
+    topic: "react",
+    topicName: "React",
+    role: "React / Frontend Developer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "What are Custom React Hooks, what rules must they follow, and how do they differ from utility functions?",
+    modelAnswer: `A **Custom Hook** in React is a reusable JavaScript function whose name starts with \`"use"\` and that **can invoke other React hooks** (\`useState\`, \`useEffect\`, \`useRef\`, etc.).
+
+**Key Rules of Hooks:**
+1. **Only call hooks at the top level:** Never call hooks inside loops, conditions (\`if\`), or nested functions. This ensures hooks execute in the exact same order on every render.
+2. **Only call hooks from React function components or custom hooks:** Never from regular vanilla JS functions.
+
+**Custom Hooks vs. Utility Functions:**
+- **Utility Function:** A plain pure JavaScript function that calculates and returns a value (e.g., date formatting, mathematical math). It cannot hold component state.
+- **Custom Hook:** Encapsulates **stateful logic** and component lifecycle side-effects, allowing stateful behavior to be shared cleanly across multiple components without higher-order component (HOC) wrappers.`,
+    interviewerIntent: "Assesses clean code component decomposition, modular state architecture, and adherence to React Hook rules.",
+    answerBlueprint: "Explain custom hook naming convention ('use'). Enumerate the 2 Rules of Hooks. Contrast stateful custom hooks with plain utility functions. Show reusable useDebounce example.",
+    codeSnippet: `import { useState, useEffect } from 'react';
+
+// Reusable Custom Hook: useDebounce
+function useDebounce(value, delay = 300) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(timer); // Cleanup on rapid changes!
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
+// Usage in Component:
+function SearchBox() {
+    const [query, setQuery] = useState('');
+    const debouncedQuery = useDebounce(query, 400);
+
+    useEffect(() => {
+        if (debouncedQuery) {
+            console.log("Searching API for debounced:", debouncedQuery);
+        }
+    }, [debouncedQuery]);
+
+    return <input value={query} onChange={e => setQuery(e.target.value)} />;
+}`,
+    complexity: "Custom hooks share stateful logic, not state itself: each component invocation maintains independent state.",
+    commonMistakes: "Calling hooks conditionally (e.g. if (user) useEffect(...)); expecting custom hook instances to share global singleton state without Context.",
+    followUpQuestions: [
+      "How do custom hooks facilitate unit testing with React Testing Library (renderHook)?",
+      "What is the difference between useId and standard uuid libraries in React 18?"
+    ],
+    tags: ["React", "Custom Hooks", "useDebounce", "Architecture", "State"]
+  },
+  {
+    id: "ds-04",
+    topic: "ds",
+    topicName: "Data Structures (DS)",
+    role: "Software Engineer / Algorithms",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "mid",
+    question: "Compare Breadth-First Search (BFS) and Depth-First Search (DFS) in graphs, and when is BFS guaranteed to find the shortest path?",
+    modelAnswer: `**BFS** and **DFS** are the two fundamental algorithms for traversing or searching tree and graph data structures:
+
+1. **Breadth-First Search (BFS):**
+   - **Data Structure:** Uses a **Queue (FIFO)**.
+   - **Exploration Pattern:** Explores level-by-level, visiting all immediate neighbor nodes before moving to the next level of depth.
+   - **Shortest Path Guarantee:** In an **unweighted graph** (or graph where all edges have equal weight), BFS is **guaranteed to find the shortest path** (minimum number of edges) between source and target!
+
+2. **Depth-First Search (DFS):**
+   - **Data Structure:** Uses a **Stack (LIFO)** or **Recursion**.
+   - **Exploration Pattern:** Plunges as deep as possible along each branch before backtracking.
+   - **Optimal For:** Topological sorting, detecting cycles in directed graphs, solving mazes, and connected components.`,
+    interviewerIntent: "Validates graph theory fundamentals, algorithm selection trade-offs, and queue vs stack memory dynamics.",
+    answerBlueprint: "Contrast Queue (BFS) vs Stack/Recursion (DFS). Explain why BFS guarantees shortest path in unweighted graphs. Detail time O(V + E) and space complexity.",
+    codeSnippet: `// BFS Shortest Path in an Unweighted Graph
+function shortestPathBFS(graph, startNode, targetNode) {
+    const queue = [[startNode, [startNode]]]; // [currentNode, pathSoFar]
+    const visited = new Set([startNode]);
+
+    while (queue.length > 0) {
+        const [node, path] = queue.shift();
+
+        if (node === targetNode) {
+            return { distance: path.length - 1, path };
+        }
+
+        for (const neighbor of (graph[node] || [])) {
+            if (!visited.has(neighbor)) {
+                visited.add(neighbor);
+                queue.push([neighbor, [...path, neighbor]]);
+            }
+        }
+    }
+    return null; // Target unreachable
+}`,
+    complexity: "Time: O(V + E) where V = vertices, E = edges | Space: O(V) for visited set and queue",
+    commonMistakes: "Using DFS to find the shortest path in an unweighted graph; forgetting to track visited nodes which causes infinite loops in cyclic graphs.",
+    followUpQuestions: [
+      "What algorithm is used for shortest path in weighted graphs with non-negative weights (Dijkstra's Algorithm)?",
+      "What is Bidirectional BFS and how does it reduce the search space from O(b^d) to O(b^(d/2))?"
+    ],
+    tags: ["Data Structures", "Graphs", "BFS", "DFS", "Shortest Path", "Algorithms"]
+  },
+  {
+    id: "cpp-04",
+    topic: "cpp",
+    topicName: "C++",
+    role: "C++ Systems / Game / Performance Engineer",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "senior",
+    question: "What are Move Semantics and Rvalue References (T&&) in C++11, and how does std::move eliminate expensive deep copies?",
+    modelAnswer: `Prior to C++11, passing or returning objects by value always triggered deep copies: allocating new memory on the heap and duplicating element buffers.
+
+**Lvalues vs. Rvalues:**
+- **Lvalue (locator value):** An object that occupies an identifiable memory address with a persistent name (e.g. variable \`x\`).
+- **Rvalue:** A temporary, ephemeral value that has no persistent identifier and is destroyed at the end of the expression (e.g. \`x + y\`, literals, temporary objects).
+
+**Rvalue References (\`T&&\`) & Move Semantics:**
+- C++11 introduced rvalue references denoted by \`T&&\`.
+- Move semantics allow an object to **transfer ownership** of heap-allocated resources from a temporary rvalue to a new object simply by copying raw pointers and nullifying the source's pointer.
+- **std::move:** Does **not** move anything itself! It is simply an unconditional static cast that converts an lvalue into an rvalue reference (\`static_cast<T&&>(var)\`), enabling the move constructor or move assignment operator to be invoked.`,
+    interviewerIntent: "Validates deep mastery of modern C++ resource management, zero-cost abstractions, and high-performance memory ownership transfer.",
+    answerBlueprint: "1) Define lvalues vs rvalues. 2) Explain why deep copying temporaries is inefficient. 3) Detail how move constructor steals raw pointers and zeroes out source. 4) Clarify that std::move is just a cast to rvalue reference.",
+    codeSnippet: `// Custom Dynamic String with Move Semantics
+class DynamicBuffer {
+    char* data;
+    size_t size;
+public:
+    // Move Constructor: Steal buffer pointer in O(1)
+    DynamicBuffer(DynamicBuffer&& other) noexcept 
+        : data(other.data), size(other.size) {
+        other.data = nullptr; // Nullify source to prevent double-free
+        other.size = 0;
+    }
+
+    // Move Assignment Operator
+    DynamicBuffer& operator=(DynamicBuffer&& other) noexcept {
+        if (this != &other) {
+            delete[] data;       // Free existing buffer
+            data = other.data;   // Steal pointer
+            size = other.size;
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+};`,
+    complexity: "Copy: O(N) heap allocation and byte duplication | Move: O(1) pointer reassignment",
+    commonMistakes: "Accessing an object after calling std::move on it (valid but unspecified state); forgetting to mark move constructors noexcept (which prevents std::vector from using move during reallocations).",
+    followUpQuestions: [
+      "Why must move constructors and move assignment operators be marked noexcept for std::vector resizing?",
+      "What is Perfect Forwarding and how does std::forward differ from std::move?"
+    ],
+    tags: ["C++", "Move Semantics", "Rvalue References", "std::move", "Performance"]
+  },
+  {
+    id: "java-04",
+    topic: "java",
+    topicName: "Java",
+    role: "Java Backend / Enterprise Architect",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "senior",
+    question: "How does ConcurrentHashMap achieve thread-safety without locking the entire table in Java, and how does it compare to Collections.synchronizedMap?",
+    modelAnswer: `In concurrent Java backend applications, managing high-throughput thread-safe map access is critical:
+
+**1. Collections.synchronizedMap(Map):**
+- Uses a single shared mutex lock on the entire backing map instance for every read and write operation.
+- **Bottleneck:** Severe thread contention under high concurrency, as readers and writers block each other.
+
+**2. ConcurrentHashMap Internals (Java 8+):**
+- **Lock-Free Reads:** Read operations (\`get()\`) are completely non-blocking and lock-free, utilizing \`volatile\` node value and next-pointer references.
+- **CAS (Compare-And-Swap) for Empty Buckets:** When inserting into an empty bucket, it uses hardware-level CAS (\`Unsafe.compareAndSwapObject\`) without taking any monitor lock.
+- **Synchronized Node Locking:** When a collision occurs (the bucket already has nodes), it locks **only the head node** of that specific bucket using Java's \`synchronized(node)\`.
+- **TreeBin Optimization:** If a bucket's collision chain exceeds 8 nodes and capacity >= 64, it transforms into a Red-Black Tree for O(log N) worst-case lookup.`,
+    interviewerIntent: "Evaluates multi-threading concurrency expertise, lock granularity, CAS mechanics, and Java memory model fundamentals.",
+    answerBlueprint: "Compare coarse-grained whole-map locking vs bucket-level locking. Explain volatile reads, CAS for uninitialized buckets, synchronized per bucket head, and treeification.",
+    codeSnippet: `// High-concurrency safe counter using ConcurrentHashMap
+ConcurrentHashMap<String, LongAdder> frequencyMap = new ConcurrentHashMap<>();
+
+void recordHit(String endpoint) {
+    // computeIfAbsent is atomic per bucket
+    frequencyMap.computeIfAbsent(endpoint, k -> new LongAdder()).increment();
+}
+
+long getHits(String endpoint) {
+    LongAdder adder = frequencyMap.get(endpoint);
+    return adder != null ? adder.sum() : 0L;
+}`,
+    complexity: "get(): O(1) lock-free | put(): O(1) locking only the specific bucket head",
+    commonMistakes: "Assuming ConcurrentHashMap prohibits null keys or values (it throws NullPointerException on null keys/values to avoid ambiguous get results in concurrent environments).",
+    followUpQuestions: [
+      "Why does ConcurrentHashMap reject null keys and null values while HashMap allows them?",
+      "How does ConcurrentHashMap calculate size() without stopping the world?"
+    ],
+    tags: ["Java", "Multithreading", "ConcurrentHashMap", "CAS", "Locking", "Concurrency"]
+  },
+  {
+    id: "sql-04",
+    topic: "sql",
+    topicName: "SQL",
+    role: "Database / Data Platform Engineer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "Explain SQL Window Functions: What is the difference between ROW_NUMBER(), RANK(), and DENSE_RANK(), and when would you use them over GROUP BY?",
+    modelAnswer: `**Window Functions** perform calculations across a set of table rows that are related to the current row without collapsing rows into a single summary output (unlike \`GROUP BY\`).
+
+**Key Distinctions:**
+1. **ROW_NUMBER():** Assigns a unique sequential integer (1, 2, 3...) to each row within the partition regardless of ties.
+2. **RANK():** Assigns the same rank to identical values, but **skips subsequent ranks** according to the number of tied rows (e.g. 1, 2, 2, 4).
+3. **DENSE_RANK():** Assigns the same rank to identical values **without gaps** in ranking numbers (e.g. 1, 2, 2, 3).
+
+**Window Function vs. GROUP BY:**
+- \`GROUP BY\` collapses rows, hiding individual record details.
+- Window functions retain individual row identities while computing running totals, moving averages, or top-N ranks per department.`,
+    interviewerIntent: "Assesses analytical SQL query writing, row partitioning, tie-breaking logic, and reporting optimizations.",
+    answerBlueprint: "Define OVER(PARTITION BY ... ORDER BY ...). Contrast ROW_NUMBER (unique), RANK (gaps on ties), and DENSE_RANK (no gaps). Provide practical Top-N per category query.",
+    codeSnippet: `-- Find the 2nd Highest Salary in each department
+WITH RankedSalaries AS (
+    SELECT 
+        emp_id,
+        department_id,
+        salary,
+        DENSE_RANK() OVER (
+            PARTITION BY department_id 
+            ORDER BY salary DESC
+        ) AS salary_rank
+    FROM employees
+)
+SELECT emp_id, department_id, salary
+FROM RankedSalaries
+WHERE salary_rank = 2;`,
+    complexity: "Time: O(N log N) due to sorting inside partitions | Space: O(N) for window buffer",
+    commonMistakes: "Trying to filter by window function in the WHERE clause directly (must use CTE or subquery because WHERE executes before window evaluation).",
+    followUpQuestions: [
+      "In the SQL query lifecycle, where do window functions execute relative to WHERE and HAVING?",
+      "How do LEAD() and LAG() calculate differences between consecutive rows?"
+    ],
+    tags: ["SQL", "Window Functions", "DENSE_RANK", "Analytics", "Database"]
+  },
+  {
+    id: "mysql-04",
+    topic: "mysql",
+    topicName: "MySQL",
+    role: "MySQL / Database Administrator",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "mid",
+    question: "What is the Leftmost Prefix Rule in MySQL Composite Indexes, and why does a query on (colB, colC) fail to use an index defined on (colA, colB, colC)?",
+    modelAnswer: `In MySQL InnoDB, a **Composite Index (Multi-Column Index)** is stored as a single B-Tree ordered by the concatenated keys from left to right.
+
+**The Leftmost Prefix Rule:**
+MySQL can use a composite index \`INDEX(colA, colB, colC)\` **only if** the query conditions include columns starting from the leftmost column (\`colA\`) continuously:
+- **Can use index:**
+  - \`WHERE colA = 5\` (uses colA)
+  - \`WHERE colA = 5 AND colB = 10\` (uses colA, colB)
+  - \`WHERE colA = 5 AND colB = 10 AND colC = 20\` (uses full index)
+  - \`WHERE colA = 5 AND colC = 20\` (uses only colA, then filters colC via Index Condition Pushdown)
+- **CANNOT use index:**
+  - \`WHERE colB = 10 AND colC = 20\` (does not start with leftmost colA!)
+
+**Why:**
+Think of a physical telephone directory sorted by (Last Name, First Name). If you only know someone's First Name ("John"), the alphabetical sorting on Last Name is useless; you must scan the entire book.`,
+    interviewerIntent: "Validates practical B-Tree index mechanics, index design, query optimization, and avoiding accidental full-table scans.",
+    answerBlueprint: "Explain B-Tree ordering on multi-column keys. Analogy of telephone book (Last name, First name). Show EXPLAIN output showing type: ALL or index vs ref.",
+    codeSnippet: `-- Composite Index Definition
+CREATE INDEX idx_user_status_created ON orders (tenant_id, status, created_at);
+
+-- FAST: Uses B-Tree index range
+EXPLAIN SELECT * FROM orders 
+WHERE tenant_id = 101 AND status = 'COMPLETED' AND created_at >= '2026-01-01';
+
+-- SLOW (FULL TABLE SCAN): Ignores leftmost tenant_id!
+EXPLAIN SELECT * FROM orders 
+WHERE status = 'COMPLETED' AND created_at >= '2026-01-01';`,
+    complexity: "Index Lookup: O(log N) tree traversal | Full Table Scan: O(N) disk pages",
+    commonMistakes: "Assuming MySQL can jump to middle index columns; placing high-cardinality timestamp ranges before equality filters in composite indexes.",
+    followUpQuestions: [
+      "What is Index Condition Pushdown (ICP) in MySQL and how does it optimize queries with partial prefix matches?",
+      "What is a Covering Index and how does it avoid the secondary-to-clustered index lookup (Bookmark Lookup)?"
+    ],
+    tags: ["MySQL", "Indexing", "Composite Index", "B-Tree", "Optimization", "InnoDB"]
+  },
+  {
+    id: "html-04",
+    topic: "html",
+    topicName: "HTML",
+    role: "Frontend / Web Performance Engineer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "Explain the Critical Rendering Path: What happens between requesting an HTML file and rendering pixels, and how do async, defer, and preload optimize it?",
+    modelAnswer: `The **Critical Rendering Path (CRP)** is the sequence of steps the browser takes to convert HTML, CSS, and JavaScript into actual screen pixels:
+
+**The 5 Core Steps:**
+1. **DOM Construction:** Browser parses raw HTML bytes into tokens, nodes, and builds the Document Object Model tree.
+2. **CSSOM Construction:** Browser parses external/internal CSS and builds the CSS Object Model tree. CSS is render-blocking!
+3. **Render Tree:** Combines DOM and CSSOM, computing styles for visible elements (ignores \`display: none\`).
+4. **Layout (Reflow):** Computes exact geometric coordinates and pixel dimensions for every element on the viewport.
+5. **Paint & Composite (Repaint):** Converts render nodes into visual bitmap layers and composites them to the GPU screen buffer.
+
+**Optimizing Scripts & Assets:**
+- **Standard \`<script>\`:** Parser-blocking. Halts HTML parsing, downloads script, executes immediately.
+- **\`<script defer>\`:** Downloads in background without blocking parser; executes in document order **after** DOM parsing is complete.
+- **\`<script async>\`:** Downloads in background; executes immediately as soon as download finishes (independent of order).
+- **\`<link rel="preload">\`:** Informs browser to fetch critical fonts, hero images, or CSS high-priority before discovery.`,
+    interviewerIntent: "Assesses web performance, Core Web Vitals (LCP, FID, CLS), browser internals, and script loading strategies.",
+    answerBlueprint: "Walk through DOM -> CSSOM -> Render Tree -> Layout -> Paint. Explain render-blocking nature of CSS. Contrast async vs defer vs preload.",
+    codeSnippet: `<!-- Performance-Optimized Document Head -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Preload critical hero font -->
+  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
+  
+  <!-- Critical CSS inlined or linked -->
+  <link rel="stylesheet" href="/styles.css" />
+  
+  <!-- Non-blocking Defer for Application Code -->
+  <script defer src="/app.js"></script>
+  
+  <!-- Independent Analytics Script -->
+  <script async src="https://analytics.example.com/tag.js"></script>
+</head>`,
+    complexity: "HTML parsing: O(N) tokens | Layout: O(N log N) tree calculation",
+    commonMistakes: "Putting heavy parser-blocking scripts in <head> without async or defer; causing layout thrashing by alternating DOM reads and writes in JS.",
+    followUpQuestions: [
+      "What is Layout Thrashing (Forced Synchronous Layout) and how do you avoid it?",
+      "What is the difference between <link rel='preload'>, <link rel='prefetch'>, and <link rel='preconnect'>?"
+    ],
+    tags: ["HTML", "Critical Rendering Path", "async", "defer", "preload", "Performance"]
+  },
+  {
+    id: "css-04",
+    topic: "css",
+    topicName: "CSS",
+    role: "Frontend Engineer / UI Developer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "mid",
+    question: "What is a CSS Stacking Context, what triggers one, and why does setting z-index: 99999 not always bring an element to the front?",
+    modelAnswer: `A **Stacking Context** is a three-dimensional conceptualization of HTML elements along an imaginary z-axis perpendicular to the viewport.
+
+**Why \`z-index: 99999\` Fails:**
+The \`z-index\` property **only compares elements within the same stacking context**! If an element is nested inside a parent with a lower stacking context, no matter how high its \`z-index\` is, it can never appear in front of an element in a higher sibling stacking context:
+- *Child with z-index: 99999 inside Parent with z-index: 1 will ALWAYS sit behind a Sibling with z-index: 2!*
+
+**Common Triggers of a New Stacking Context:**
+1. Root element of the document (\`<html>\`).
+2. Element with \`position: absolute/relative\` and \`z-index\` value other than \`auto\`.
+3. Element with \`position: fixed\` or \`position: sticky\`.
+4. Element with \`opacity\` less than 1.
+5. Element with \`transform\`, \`filter\`, \`perspective\`, or \`backdrop-filter\` other than \`none\`.
+6. Element with \`isolation: isolate\` (the cleanest modern CSS property to reset stacking boundaries).`,
+    interviewerIntent: "Tests deep CSS rendering mechanics, layering bugs, and clean layout isolation.",
+    answerBlueprint: "Explain 3D z-axis model. Clarify that z-index is local to its stacking context. Name top triggers (opacity, transform, fixed, isolation). Show isolation: isolate.",
+    codeSnippet: `/* Fix Stacking Leak using isolation: isolate */
+.modal-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+.card-container {
+    /* Creates a local, isolated stacking boundary */
+    isolation: isolate; 
+    transform: scale(1.0); /* Also creates stacking context */
+}
+
+.card-tooltip {
+    position: absolute;
+    z-index: 99999; /* Trapped inside .card-container's context! */
+}`,
+    complexity: "Compositing layer calculations: Handled by GPU compositing thread in O(layers)",
+    commonMistakes: "Incrementing z-index to arbitrary numbers like 9999999 instead of debugging the parent stacking context; forgetting that CSS transforms create a stacking context.",
+    followUpQuestions: [
+      "How does CSS isolation: isolate prevent z-index bugs in design systems and component libraries?",
+      "What is the difference between reflow and repaint in CSS performance?"
+    ],
+    tags: ["CSS", "Stacking Context", "z-index", "isolation", "Layout"]
+  },
+  {
+    id: "javascript-04",
+    topic: "javascript",
+    topicName: "JavaScript",
+    role: "JavaScript / Frontend Engineer",
+    category: "technical",
+    difficulty: "medium",
+    experienceLevel: "junior",
+    question: "What is the practical difference between Debouncing and Throttling, and how do you implement both from scratch?",
+    modelAnswer: `**Debouncing** and **Throttling** are two rate-limiting techniques used to control how frequently a callback function executes in response to high-frequency events (like \`window.onresize\`, \`scroll\`, or \`input\` typing):
+
+1. **Debounce:**
+   - **Mechanism:** Postpones function execution until after a specified period of **inactivity** has elapsed. If the event fires again before the timer expires, the previous timer is cancelled and restarted.
+   - **Ideal Use Cases:** Live search auto-complete, window resize layout recalculation, form autosave after user stops typing.
+
+2. **Throttle:**
+   - **Mechanism:** Guarantees that the function executes at most **once every X milliseconds**, regardless of how many times the event is triggered.
+   - **Ideal Use Cases:** Infinite scroll pagination check on \`scroll\`, drag-and-drop mousemove updates, video player progress trackers.`,
+    interviewerIntent: "Tests closure mastery, asynchronous timers (\`setTimeout\`), performance optimization, and custom utility engineering.",
+    answerBlueprint: "Define debounce (wait for silence) vs throttle (constant regular intervals). Provide clear, closure-based implementations of both with clearTimeout and timestamps.",
+    codeSnippet: `// 1. Debounce Implementation
+function debounce(fn, delay = 300) {
+    let timerId = null;
+    return function (...args) {
+        if (timerId) clearTimeout(timerId);
+        timerId = setTimeout(() => {
+            fn.apply(this, args);
+        }, delay);
+    };
+}
+
+// 2. Throttle Implementation
+function throttle(fn, interval = 300) {
+    let lastTime = 0;
+    return function (...args) {
+        const now = Date.now();
+        if (now - lastTime >= interval) {
+            lastTime = now;
+            fn.apply(this, args);
+        }
+    };
+}`,
+    complexity: "Time: O(1) invocation overhead | Space: O(1) memory for timer handle and timestamp closures",
+    commonMistakes: "Losing the 'this' context when invoking the wrapped function; forgetting to return a cleanup cancel method for component unmounting in React.",
+    followUpQuestions: [
+      "How do you implement leading vs trailing options in a production debounce function?",
+      "Why is requestAnimationFrame preferred over throttling for DOM scroll/animation loops?"
+    ],
+    tags: ["JavaScript", "Debounce", "Throttle", "Closures", "Performance", "Timers"]
+  },
+  {
+    id: "nodejs-04",
+    topic: "nodejs",
+    topicName: "Node.js",
+    role: "Node.js / Distributed Systems Engineer",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "senior",
+    question: "Compare Node.js Clustering, Worker Threads, and Child Processes: When should you use each to scale CPU-bound or multi-core workloads?",
+    modelAnswer: `Because Node.js runs JavaScript on a single-threaded event loop, heavy CPU-intensive operations (image compression, cryptography, PDF rendering) can block incoming I/O. Node provides three distinct scaling models:
+
+1. **Clustering (\`cluster\` module):**
+   - **Architecture:** Spawns multiple identical OS processes running the same server code, sharing the same listening port (via master process round-robin).
+   - **Memory:** Shared-nothing; each worker has its own independent V8 heap, libuv loop, and 30-50MB memory footprint.
+   - **Best For:** Scaling HTTP web servers across all physical CPU cores on a single machine.
+
+2. **Worker Threads (\`worker_threads\` module):**
+   - **Architecture:** Spawns multiple OS threads within the **same process**, running isolated V8 isolates with separate event loops.
+   - **Memory:** Can share memory directly via \`SharedArrayBuffer\` and \`Atomics\` without serialization overhead.
+   - **Best For:** Heavy in-memory CPU tasks (data parsing, AI tokenization, matrix math) inside a single server instance.
+
+3. **Child Processes (\`child_process\` module):**
+   - **Architecture:** Spawns independent sub-processes via \`spawn\`, \`exec\`, or \`fork\`, communicating via IPC pipes or stdin/stdout.
+   - **Best For:** Executing external binaries, shell commands (e.g., ffmpeg, git), or isolated micro-scripts.`,
+    interviewerIntent: "Evaluates production multi-core architecture, memory isolation vs sharing, process orchestration, and avoidance of event loop starvation.",
+    answerBlueprint: "Compare Cluster (multiple processes on same port), Worker Threads (threads inside one process with SharedArrayBuffer), and Child Process (external CLI/scripts).",
+    codeSnippet: `// Worker Thread Example for Heavy CPU Computation
+// main.js
+const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
+
+if (isMainThread) {
+    const worker = new Worker(__filename, { workerData: { num: 42 } });
+    worker.on('message', result => console.log("Calculated Fibonacci:", result));
+    worker.on('error', err => console.error(err));
+} else {
+    // Worker Thread Logic (Runs off the main event loop!)
+    function fib(n) { return n <= 1 ? n : fib(n - 1) + fib(n - 2); }
+    parentPort.postMessage(fib(workerData.num));
+}`,
+    complexity: "Cluster: O(Cores) separate processes | Worker Threads: O(Threads) with low shared memory overhead",
+    commonMistakes: "Using Worker Threads for I/O operations (libuv already handles I/O asynchronously); mutating shared memory without Atomics leading to race conditions.",
+    followUpQuestions: [
+      "How does PM2 utilize Node's cluster mode in containerized production deployments?",
+      "What are the security implications of using child_process.exec() with untrusted user input?"
+    ],
+    tags: ["Node.js", "Cluster", "Worker Threads", "Concurrency", "Scaling", "CPU"]
+  },
+  {
+    id: "react-04",
+    topic: "react",
+    topicName: "React",
+    role: "Senior Frontend / React Architect",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "senior",
+    question: "What is Concurrent Mode in React 18, and how do useTransition and useDeferredValue prevent UI freezing during heavy state updates?",
+    modelAnswer: `Prior to React 18, rendering was **synchronous and uninterruptible**: once React started rendering a large component tree, it could not yield execution back to the browser until the entire tree finished rendering. If a render took 100ms, user inputs and button clicks froze.
+
+**React 18 Concurrent Rendering:**
+Concurrent React allows renders to be **interrupted, paused, and resumed in the background**. If urgent user input occurs (e.g. typing), React pauses the non-urgent background render, handles the user interaction, and resumes.
+
+**Key Hooks:**
+1. **\`useTransition()\`:**
+   - Marks a state update as a non-urgent transition (\`startTransition(() => setSearch(val))\`).
+   - Urgent state updates (like updating input value) execute immediately, while the expensive filtered list renders in the background with an \`isPending\` loading indicator.
+2. **\`useDeferredValue(value)\`:**
+   - Defers updating a derived value until the urgent render completes, similar to debouncing but without arbitrary millisecond delays (React updates it as fast as CPU permits).`,
+    interviewerIntent: "Assesses understanding of modern React 18 concurrent mechanics, user perceived responsiveness, and advanced render scheduling.",
+    answerBlueprint: "Contrast synchronous uninterruptible rendering with interruptible concurrent rendering. Explain useTransition for actions and useDeferredValue for values.",
+    codeSnippet: `import { useState, useTransition, useDeferredValue } from 'react';
+
+function ProductCatalog({ allProducts }) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isPending, startTransition] = useTransition();
+
+    const handleSearch = (e) => {
+        // Urgent update: Keep input field responsive and snappy!
+        setSearchTerm(e.target.value);
+    };
+
+    // Defer the heavy list calculation
+    const deferredSearch = useDeferredValue(searchTerm);
+    const filteredProducts = allProducts.filter(p => 
+        p.name.toLowerCase().includes(deferredSearch.toLowerCase())
+    );
+
+    return (
+        <div>
+            <input value={searchTerm} onChange={handleSearch} placeholder="Search..." />
+            {isPending && <span className="spinner">Updating catalog...</span>}
+            <ProductList items={filteredProducts} />
+        </div>
+    );
+}`,
+    complexity: "Rendering yields to the browser main thread via MessageChannel / scheduler cooperative multitasking.",
+    commonMistakes: "Wrapping standard controlled input updates in startTransition (causing laggy keystrokes); using useTransition where a simple debounce is sufficient.",
+    followUpQuestions: [
+      "What is the difference between React 18 Automatic Batching and React 17 batching?",
+      "How does React Server Components (RSC) complement concurrent rendering?"
+    ],
+    tags: ["React", "React 18", "Concurrent Mode", "useTransition", "useDeferredValue", "Performance"]
+  },
+  {
+    id: "ds-05",
+    topic: "ds",
+    topicName: "Data Structures (DS)",
+    role: "Software Engineer / Algorithms",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "mid",
+    question: "How do you design and implement a Least Recently Used (LRU) Cache with O(1) time complexity for both get() and put() operations?",
+    modelAnswer: `An **LRU Cache** evicts the least recently accessed item when capacity is reached.
+
+**Optimal Architecture: Hash Map + Doubly Linked List:**
+1. **Hash Map (Key -> Node Pointer):** Provides **O(1)** lookup to locate any node in memory instantly.
+2. **Doubly Linked List (Head <-> Tail):**
+   - **Head:** Most Recently Used (MRU) items.
+   - **Tail:** Least Recently Used (LRU) items.
+   - Allows **O(1)** insertion at the head, **O(1)** deletion of any arbitrary node (because each node has \`prev\` and \`next\` pointers), and **O(1)** eviction from the tail.
+
+**Operation Mechanics:**
+- **get(key):** If key exists in map, move the node to the head of the linked list (marking it recently used) and return its value. O(1).
+- **put(key, value):** If key exists, update value and move to head. If new, create node and prepend to head; if capacity exceeded, remove tail node and delete from hash map. O(1).`,
+    interviewerIntent: "Classic MAANG interview question. Assesses composite data structure design, pointer manipulation, and algorithmic efficiency.",
+    answerBlueprint: "Explain why Array (O(N) shift) or plain Hash Map is insufficient. Show HashMap + Doubly Linked List with dummy head and tail nodes to eliminate edge cases.",
+    codeSnippet: `// Node for Doubly Linked List
+class Node {
+    constructor(key, val) {
+        this.key = key;
+        this.val = val;
+        this.prev = null;
+        this.next = null;
+    }
+}
+
+class LRUCache {
+    constructor(capacity) {
+        this.capacity = capacity;
+        this.map = new Map();
+        // Dummy head and tail to eliminate null pointer edge checks
+        this.head = new Node(0, 0);
+        this.tail = new Node(0, 0);
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+
+    _remove(node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    _add(node) {
+        node.next = this.head.next;
+        node.prev = this.head;
+        this.head.next.prev = node;
+        this.head.next = node;
+    }
+
+    get(key) {
+        if (!this.map.has(key)) return -1;
+        const node = this.map.get(key);
+        this._remove(node);
+        this._add(node); // Move to MRU head
+        return node.val;
+    }
+
+    put(key, value) {
+        if (this.map.has(key)) {
+            this._remove(this.map.get(key));
+        }
+        const newNode = new Node(key, value);
+        this._add(newNode);
+        this.map.set(key, newNode);
+
+        if (this.map.size > this.capacity) {
+            const lru = this.tail.prev;
+            this._remove(lru);
+            this.map.delete(lru.key);
+        }
+    }
+}`,
+    complexity: "Time: O(1) for both get() and put() | Space: O(Capacity) for Map and Doubly Linked List nodes",
+    commonMistakes: "Using a singly linked list (requires O(N) to find the previous node for deletion); failing to delete the evicted node key from the hash map.",
+    followUpQuestions: [
+      "How does the JavaScript Map object naturally maintain insertion order to implement a simpler LRU?",
+      "How would you make this LRU Cache thread-safe in a multi-threaded C++ or Java application?"
+    ],
+    tags: ["Data Structures", "LRU Cache", "Doubly Linked List", "Hash Map", "Design", "O(1)"]
+  },
+  {
+    id: "c-05",
+    topic: "c",
+    topicName: "C Programming",
+    role: "Embedded / Systems Developer",
+    category: "technical",
+    difficulty: "hard",
+    experienceLevel: "senior",
+    question: "How do function pointers work in C, and how are they used to implement callbacks, event handlers, and polymorphism?",
+    modelAnswer: `In C, executable code resides in the text segment of memory. A **function pointer** stores the memory address of the first instruction of a function, allowing code to invoke functions dynamically at runtime.
+
+**Syntax:**
+\`return_type (*pointer_name)(parameter_types);\`
+- Example: \`int (*compare_fn)(const void *, const void *);\`
+
+**Primary Use Cases:**
+1. **Callbacks:** Passing a custom comparison function to standard library algorithms like \`qsort()\`.
+2. **Polymorphism / Virtual Tables in C:** Implementing object-oriented vtables in C using structs holding function pointers (the foundation of the Linux Kernel virtual file system - VFS \`file_operations\`).
+3. **State Machines & Dispatch Tables:** Array of function pointers indexed by event enum for instant O(1) event dispatching without long \`switch\` statements.`,
+    interviewerIntent: "Tests low-level understanding of function addresses, calling conventions, runtime dispatching, and idiomatic C architecture.",
+    answerBlueprint: "Explain function pointer syntax and typedef. Detail text segment memory address. Provide qsort callback and struct-based vtable dispatch examples.",
+    codeSnippet: `// 1. Function Pointer Typedef
+typedef int (*BinaryOp)(int, int);
+
+int add(int a, int b) { return a + b; }
+int multiply(int a, int b) { return a * b; }
+
+// 2. Dispatcher accepting Function Pointer
+int compute(int a, int b, BinaryOp op) {
+    return op(a, b); // Dynamic dispatch
+}
+
+// 3. Object-Oriented Vtable in C (Linux Kernel Style)
+struct DeviceDriver {
+    const char *name;
+    int (*init)(void);
+    int (*read)(char *buf, size_t len);
+    void (*close)(void);
+};`,
+    complexity: "Time: O(1) indirect call with slight branch predictor overhead | Space: 8 bytes per pointer",
+    commonMistakes: "Omitting parentheses around (*ptr), creating a function that returns a pointer instead of a function pointer; type mismatch in signature.",
+    followUpQuestions: [
+      "How does qsort() use void pointers and function pointers to achieve generic sorting in C?",
+      "How does the Linux kernel implement device driver interfaces using struct file_operations?"
+    ],
+    tags: ["C", "Function Pointers", "Callbacks", "vtable", "Polymorphism", "Low-Level"]
   }
 ];
 

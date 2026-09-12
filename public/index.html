@@ -30,20 +30,23 @@
 
       <!-- Navigation Links -->
       <nav class="nav-links" id="main-nav">
-        <button class="nav-btn active" id="nav-home">
+        <button class="nav-btn active" id="nav-home" title="Home & Practice Studio">
           <span class="nav-icon">🏠</span> <span>Home</span>
         </button>
-        <button class="nav-btn" id="nav-explore">
-          <span class="nav-icon">🌟</span> <span>Explore All</span>
+        <button class="nav-btn" id="nav-explore" title="Explore All 50 Questions">
+          <span class="nav-icon">🌟</span> <span>Explore</span>
         </button>
-        <button class="nav-btn" id="nav-dashboard">
+        <button class="nav-btn" id="nav-resume" title="AI & ATS Resume Review & Scoring">
+          <span class="nav-icon">📄</span> <span>Resume Review</span>
+        </button>
+        <button class="nav-btn" id="nav-dashboard" title="Candidate Dashboard">
           <span class="nav-icon">📊</span> <span>Dashboard</span>
         </button>
-        <button class="nav-btn" id="nav-study">
-          <span class="nav-icon">🎓</span> <span>Study Sprint</span>
+        <button class="nav-btn" id="nav-study" title="7-Day Study Sprint">
+          <span class="nav-icon">🎓</span> <span>Sprint</span>
         </button>
-        <button class="nav-btn" id="nav-career">
-          <span class="nav-icon">💼</span> <span>Career Hub</span>
+        <button class="nav-btn" id="nav-career" title="Career Hub & Roadmaps">
+          <span class="nav-icon">💼</span> <span>Career</span>
         </button>
       </nav>
 
@@ -51,7 +54,7 @@
       <div class="header-center-search">
         <div class="search-wrapper">
           <select id="header-search-topic" class="search-topic-select" title="Filter by Topic">
-            <option value="all">🌐 All Topics</option>
+            <option value="all">🌐 All</option>
             <option value="c">⚙️ C</option>
             <option value="cpp">🚀 C++</option>
             <option value="python">🐍 Python</option>
@@ -60,13 +63,13 @@
             <option value="mysql">🐬 MySQL</option>
             <option value="html">🌐 HTML</option>
             <option value="css">🎨 CSS</option>
-            <option value="javascript">⚡ JavaScript</option>
-            <option value="nodejs">🟢 Node.js</option>
+            <option value="javascript">⚡ JS</option>
+            <option value="nodejs">🟢 Node</option>
             <option value="react">⚛️ React</option>
-            <option value="ds">🧩 DS (Algorithms)</option>
+            <option value="ds">🧩 DS</option>
           </select>
           <span class="search-icon">🔍</span>
-          <input type="text" id="global-search-input" placeholder="Search C, Python, Java, SQL, React, DS..." autocomplete="off" />
+          <input type="text" id="global-search-input" placeholder="Search questions..." autocomplete="off" />
           <button id="search-clear-btn" class="search-clear hidden" title="Clear search">✕</button>
         </div>
       </div>
@@ -81,16 +84,16 @@
 
         <!-- User Authentication & Profile Menu -->
         <div class="auth-section" id="header-auth">
-          <button class="btn-auth-open" id="btn-open-login">
+          <button class="btn-auth-open" id="btn-open-login" title="Sign In or Register with Gmail">
             <span class="google-g-mini">G</span>
-            <span>Sign In / Register</span>
+            <span>Sign In</span>
           </button>
 
           <div class="user-pill hidden" id="user-profile-menu">
             <div class="user-avatar" id="user-avatar-badge">👨‍💻</div>
             <div class="user-info-text">
               <span class="user-name" id="user-display-name">Candidate</span>
-              <span class="user-role-badge" id="user-role-badge">Gmail User</span>
+              <span class="user-role-badge" id="user-role-badge">Gmail</span>
             </div>
             <button class="btn-icon-profile" id="btn-open-profile" title="View Profile">👤</button>
             <button class="btn-logout" id="btn-logout" title="Log Out">Sign Out</button>
@@ -546,6 +549,178 @@
     <!-- Career Cards Grid -->
     <div class="career-grid" id="career-cards-container">
       <!-- Injected via JavaScript -->
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- VIEW 5.5: RESUME REVIEW & ATS RATING       -->
+  <!-- ========================================== -->
+  <section class="resume-view-layout hidden" id="view-resume">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title">📄 AI & ATS Resume Checker & Score Rating</h2>
+        <p class="view-subtitle">Evaluate your resume against automated ATS filters, tech stack alignment (C, Python, Java, SQL, React, Node, DS), action verbs, and quantifiable metrics.</p>
+      </div>
+    </div>
+
+    <div class="resume-checker-grid">
+      <!-- Left Column: Input Form -->
+      <div class="resume-input-card">
+        <div class="card-header-simple">
+          <h3>📝 Resume & Role Details</h3>
+          <span class="badge-accent">ATS Engine</span>
+        </div>
+
+        <div class="form-group">
+          <label for="resume-target-role">Target Role</label>
+          <select id="resume-target-role" class="form-control">
+            <option value="Full Stack / Web Developer">Full Stack / Web Developer</option>
+            <option value="Frontend Engineer (React / HTML / CSS / JS)">Frontend Engineer (React / JS)</option>
+            <option value="Node.js Backend Developer">Node.js Backend Developer</option>
+            <option value="Python / Backend Developer">Python / Backend Developer</option>
+            <option value="Java / Enterprise Backend Engineer">Java Backend Engineer</option>
+            <option value="SQL & Database Engineer">SQL & Database Engineer</option>
+            <option value="C / Embedded Systems Developer">C / Embedded Systems Developer</option>
+            <option value="C++ Software Engineer">C++ Software Engineer</option>
+            <option value="Data Structures & Algorithms Specialist">Data Structures & Algorithms</option>
+            <option value="General Software Engineer">General Software Engineer</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <details class="jd-details">
+            <summary class="jd-summary">📋 Add Target Job Description (Optional)</summary>
+            <textarea id="resume-jd-input" class="form-control jd-textarea" rows="3" placeholder="Paste the job description to check keyword alignment against this specific opening..."></textarea>
+          </details>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-counter">
+            <label for="resume-text-input">Paste Resume Text</label>
+            <span class="word-counter-badge" id="resume-word-count">0 words</span>
+          </div>
+          <textarea id="resume-text-input" class="form-control resume-textarea" rows="14" placeholder="Paste your complete resume markdown or plain text here (Summary, Experience, Projects, Skills, Education)..."></textarea>
+        </div>
+
+        <div class="resume-actions-row">
+          <button type="button" class="btn-secondary" id="btn-sample-resume" title="Fill with sample senior engineer resume">
+            ⚡ Load Sample Resume
+          </button>
+          <button type="button" class="btn-secondary" id="btn-clear-resume" title="Clear text">
+            🧹 Clear
+          </button>
+          <button type="button" class="btn-primary flex-1" id="btn-score-resume">
+            <span class="btn-text">✨ Rate My Resume</span>
+            <span class="btn-spinner hidden" id="spinner-resume"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Results Dashboard -->
+      <div class="resume-results-card">
+        <!-- Empty State Prompt -->
+        <div class="resume-empty-prompt" id="resume-empty-prompt">
+          <div class="empty-icon">📊</div>
+          <h3>Ready to Score Your Resume</h3>
+          <p>Paste your resume on the left or click <strong>"⚡ Load Sample Resume"</strong> to test immediately. Our analyzer will score:</p>
+          <ul class="empty-features-list">
+            <li>🎯 <strong>Overall ATS Rating (0–100)</strong> and candidate competitive tier</li>
+            <li>🚀 <strong>Strong Action Verb Density</strong> (Architected, Engineered, Optimized)</li>
+            <li>💻 <strong>Keyword Alignment</strong> across 12 tech disciplines (C, Java, SQL, React, etc.)</li>
+            <li>📈 <strong>Quantified Business Outcomes</strong> (%, ms, latency reductions, user scale)</li>
+            <li>📐 <strong>ATS Structure & Core Sections</strong> completeness checklist</li>
+          </ul>
+        </div>
+
+        <!-- Populated Results Container -->
+        <div class="resume-results-content hidden" id="resume-results-content">
+          <!-- Score Banner -->
+          <div class="resume-score-banner">
+            <div class="resume-score-gauge" id="resume-score-gauge">
+              <span class="score-number" id="resume-score-val">0</span>
+              <span class="score-total">/100</span>
+            </div>
+            <div class="score-banner-text">
+              <span class="tier-pill" id="resume-tier-badge">Calculating...</span>
+              <h3 id="resume-tier-title">Resume Score</h3>
+              <p id="resume-score-desc">Detailed ATS rubric breakdown:</p>
+            </div>
+          </div>
+
+          <!-- 4 Category Progress Bars -->
+          <div class="rubric-grid">
+            <div class="rubric-item">
+              <div class="rubric-header">
+                <span>🚀 Impact & Action Verbs</span>
+                <span id="score-val-verbs">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-verbs" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="rubric-item">
+              <div class="rubric-header">
+                <span>💻 Tech Stack Alignment</span>
+                <span id="score-val-tech">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-tech" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="rubric-item">
+              <div class="rubric-header">
+                <span>📈 Quantifiable Metrics</span>
+                <span id="score-val-metrics">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-metrics" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="rubric-item">
+              <div class="rubric-header">
+                <span>📐 ATS Structural Sections</span>
+                <span id="score-val-sections">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-sections" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Detection Badges -->
+          <div class="sections-detected-box">
+            <span class="section-box-title">Core Sections Found:</span>
+            <div class="sections-badge-group" id="resume-sections-group"></div>
+          </div>
+
+          <!-- Matched Technologies -->
+          <div class="skills-block">
+            <h4 class="skills-title">✅ Matched Technical Keywords (<span id="matched-count">0</span>)</h4>
+            <div class="skills-pill-wrap" id="resume-matched-skills"></div>
+          </div>
+
+          <!-- Missing Skills -->
+          <div class="skills-block">
+            <h4 class="skills-title warning-title">⚠️ Recommended Skills for Target Role</h4>
+            <div class="skills-pill-wrap" id="resume-missing-skills"></div>
+          </div>
+
+          <!-- Detected Clichés / Fluff -->
+          <div class="skills-block hidden" id="resume-fluff-wrap">
+            <h4 class="skills-title danger-title">🚫 Detected Clichés to Replace</h4>
+            <div class="skills-pill-wrap" id="resume-fluff-skills"></div>
+          </div>
+
+          <!-- Actionable Recommendations -->
+          <div class="recommendations-box">
+            <h4 class="rec-title">💡 Actionable Improvement Steps:</h4>
+            <ul class="rec-list" id="resume-advice-list"></ul>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 

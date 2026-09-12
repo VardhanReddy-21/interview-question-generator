@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const brandHome = document.getElementById('brand-home');
   const navHome = document.getElementById('nav-home');
   const navExplore = document.getElementById('nav-explore');
+  const navResume = document.getElementById('nav-resume');
   const navDashboard = document.getElementById('nav-dashboard');
   const navStudy = document.getElementById('nav-study');
   const navCareer = document.getElementById('nav-career');
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Views
   const viewHome = document.getElementById('view-home');
   const viewExplore = document.getElementById('view-explore');
+  const viewResume = document.getElementById('view-resume');
   const viewDashboard = document.getElementById('view-dashboard');
   const viewStudy = document.getElementById('view-study');
   const viewCareer = document.getElementById('view-career');
@@ -164,6 +166,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // Career Hub Grid
   const careerCardsContainer = document.getElementById('career-cards-container');
 
+  // Resume Review Elements
+  const resumeTargetRole = document.getElementById('resume-target-role');
+  const resumeJdInput = document.getElementById('resume-jd-input');
+  const resumeTextInput = document.getElementById('resume-text-input');
+  const resumeWordCount = document.getElementById('resume-word-count');
+  const btnSampleResume = document.getElementById('btn-sample-resume');
+  const btnClearResume = document.getElementById('btn-clear-resume');
+  const btnScoreResume = document.getElementById('btn-score-resume');
+  const spinnerResume = document.getElementById('spinner-resume');
+  const resumeEmptyPrompt = document.getElementById('resume-empty-prompt');
+  const resumeResultsContent = document.getElementById('resume-results-content');
+  const resumeScoreGauge = document.getElementById('resume-score-gauge');
+  const resumeScoreVal = document.getElementById('resume-score-val');
+  const resumeTierBadge = document.getElementById('resume-tier-badge');
+  const resumeTierTitle = document.getElementById('resume-tier-title');
+  const resumeScoreDesc = document.getElementById('resume-score-desc');
+  const scoreValVerbs = document.getElementById('score-val-verbs');
+  const barVerbs = document.getElementById('bar-verbs');
+  const scoreValTech = document.getElementById('score-val-tech');
+  const barTech = document.getElementById('bar-tech');
+  const scoreValMetrics = document.getElementById('score-val-metrics');
+  const barMetrics = document.getElementById('bar-metrics');
+  const scoreValSections = document.getElementById('score-val-sections');
+  const barSections = document.getElementById('bar-sections');
+  const resumeSectionsGroup = document.getElementById('resume-sections-group');
+  const matchedCount = document.getElementById('matched-count');
+  const resumeMatchedSkills = document.getElementById('resume-matched-skills');
+  const resumeMissingSkills = document.getElementById('resume-missing-skills');
+  const resumeFluffWrap = document.getElementById('resume-fluff-wrap');
+  const resumeFluffSkills = document.getElementById('resume-fluff-skills');
+  const resumeAdviceList = document.getElementById('resume-advice-list');
+
   // ==========================================================================
   // 1. THEME SWITCHING (DARK / LIGHT MODE)
   // ==========================================================================
@@ -206,10 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
     activeView = viewName;
 
     // Reset nav active states
-    const navButtons = [navHome, navExplore, navDashboard, navStudy, navCareer];
+    const navButtons = [navHome, navExplore, navResume, navDashboard, navStudy, navCareer];
     navButtons.forEach(b => { if (b) b.classList.remove('active'); });
 
-    const viewSections = [viewHome, viewExplore, viewDashboard, viewStudy, viewCareer, viewSearch];
+    const viewSections = [viewHome, viewExplore, viewResume, viewDashboard, viewStudy, viewCareer, viewSearch];
     viewSections.forEach(v => { if (v) v.classList.add('hidden'); });
 
     if (viewName === 'home') {
@@ -222,6 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
       if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = label || 'Explore All Topics';
       loadExploreView(activeTopic);
+    } else if (viewName === 'resume') {
+      if (navResume) navResume.classList.add('active');
+      if (viewResume) viewResume.classList.remove('hidden');
+      if (breadcrumbBar) breadcrumbBar.classList.remove('hidden');
+      if (breadcrumbCurrentView) breadcrumbCurrentView.textContent = label || 'Resume Review & ATS Rating';
     } else if (viewName === 'dashboard') {
       if (navDashboard) navDashboard.classList.add('active');
       if (viewDashboard) viewDashboard.classList.remove('hidden');
@@ -251,6 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (brandHome) brandHome.addEventListener('click', () => switchView('home'));
   if (navHome) navHome.addEventListener('click', () => switchView('home'));
   if (navExplore) navExplore.addEventListener('click', () => switchView('explore'));
+  if (navResume) navResume.addEventListener('click', () => switchView('resume'));
   if (navDashboard) navDashboard.addEventListener('click', () => switchView('dashboard'));
   if (navStudy) navStudy.addEventListener('click', () => switchView('study'));
   if (navCareer) navCareer.addEventListener('click', () => switchView('career'));
@@ -1243,6 +1283,268 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       toast.remove();
     }, 3000);
+  }
+
+  // ==========================================================================
+  // 15. RESUME CHECKER & ATS RATING MODULE
+  // ==========================================================================
+  const SAMPLE_RESUME = `# Senior Full Stack & Distributed Systems Engineer
+Email: candidate@gmail.com | Phone: +91-9876543210 | Bengaluru, India
+GitHub: github.com/candidate-dev | Portfolio: candidate.dev
+
+## Professional Summary
+Results-driven Senior Software Engineer with 5+ years of experience architecting high-concurrency distributed web applications, optimizing databases, and deploying scalable microservices in Java, Python, and Node.js. Passionate about algorithms, low-latency performance, and clean code principles.
+
+## Core Technical Skills
+- Programming Languages: JavaScript (ES6+), TypeScript, Python, Java 17, C, C++, SQL
+- Frontend: React.js, Next.js, Redux Toolkit, HTML5, CSS3, Tailwind CSS
+- Backend & Frameworks: Node.js, Express, FastAPI, Spring Boot, Microservices
+- Databases & Systems: MySQL (InnoDB), PostgreSQL, Redis caching, Apache Kafka
+- DevOps & Cloud: Docker, Kubernetes, AWS (S3, EC2), CI/CD GitHub Actions
+
+## Professional Experience
+### Lead Software Engineer — TechSphere Solutions (2023 – Present)
+- Architected and deployed event-driven payment processing microservices using Node.js, Express, and Redis, handling 4.5M daily transactions.
+- Optimized slow MySQL queries and composite B-Tree indexes, reducing P99 latency by 42% and eliminating query timeouts.
+- Designed responsive React frontends with custom hooks and debouncing, improving Largest Contentful Paint (LCP) by 35% for 180k active users.
+- Spearheaded migration from monolithic architecture to containerized Docker services, accelerating deployment velocity by 65%.
+
+### Software Engineer — CloudScale Systems (2021 – 2023)
+- Engineered scalable RESTful APIs with Python FastAPI and PostgreSQL, serving 600k monthly API requests with 99.98% uptime.
+- Developed real-time telemetry processing pipelines using Java Spring Boot and Apache Kafka, processing 15k messages per second.
+- Implemented robust authentication with OAuth2 and JWT, securing sensitive customer transaction data.
+- Mentored 4 junior engineers on data structures, algorithmic complexity, and unit testing practices.
+
+## Key Projects
+### HyperQueue — Distributed In-Memory Message Broker (C++ & Python)
+- Built a high-performance multithreaded message queue in C++ utilizing ring buffers, lock-free concurrency, and socket programming.
+- Achieved sub-50 microsecond delivery latency with zero packet drops under benchmark stress tests.
+
+### CodeSprint — Real-Time Collaborative Coding Studio (React & Node.js)
+- Implemented real-time code editor with WebSockets, syntax highlighting, and Docker-sandboxed remote code execution for 12 programming languages.
+
+## Education
+- B.Tech in Computer Science & Engineering, Top 5% Rank, 2021`;
+
+  // Live word counter
+  if (resumeTextInput) {
+    resumeTextInput.addEventListener('input', () => {
+      const text = resumeTextInput.value.trim();
+      const words = text ? text.split(/\s+/).filter(w => w.length > 0).length : 0;
+      if (resumeWordCount) {
+        resumeWordCount.textContent = `${words} word${words === 1 ? '' : 's'}`;
+      }
+    });
+  }
+
+  // Load sample resume button
+  if (btnSampleResume) {
+    btnSampleResume.addEventListener('click', () => {
+      if (resumeTextInput) {
+        resumeTextInput.value = SAMPLE_RESUME;
+        const words = SAMPLE_RESUME.split(/\s+/).filter(w => w.length > 0).length;
+        if (resumeWordCount) {
+          resumeWordCount.textContent = `${words} words`;
+        }
+        showToast("⚡ Sample Senior Engineer Resume Loaded!");
+      }
+    });
+  }
+
+  // Clear resume button
+  if (btnClearResume) {
+    btnClearResume.addEventListener('click', () => {
+      if (resumeTextInput) {
+        resumeTextInput.value = '';
+        if (resumeWordCount) resumeWordCount.textContent = '0 words';
+      }
+      if (resumeResultsContent) resumeResultsContent.classList.add('hidden');
+      if (resumeEmptyPrompt) resumeEmptyPrompt.classList.remove('hidden');
+    });
+  }
+
+  // Rate My Resume button
+  if (btnScoreResume) {
+    btnScoreResume.addEventListener('click', async () => {
+      const resumeText = resumeTextInput ? resumeTextInput.value.trim() : '';
+      const targetRole = resumeTargetRole ? resumeTargetRole.value : 'Full Stack / Web Developer';
+      const jdText = resumeJdInput ? resumeJdInput.value.trim() : '';
+
+      if (!resumeText || resumeText.split(/\s+/).filter(w => w.length > 0).length < 20) {
+        alert("Please paste at least 20 words of your resume (or click '⚡ Load Sample Resume') to analyze!");
+        return;
+      }
+
+      // UI Loading state
+      btnScoreResume.disabled = true;
+      if (spinnerResume) spinnerResume.classList.remove('hidden');
+      const originalText = btnScoreResume.querySelector('.btn-text');
+      if (originalText) originalText.textContent = 'Analyzing ATS Metrics...';
+
+      try {
+        const response = await fetch('/api/resume/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resumeText, targetRole, jdText })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          alert(data.error || "Failed to analyze resume.");
+          return;
+        }
+
+        renderResumeEvaluation(data);
+        showToast(`✅ Resume Scored: ${data.score}/100!`);
+      } catch (err) {
+        console.error("Resume scoring error:", err);
+        alert("An error occurred while evaluating the resume. Please check server logs.");
+      } finally {
+        btnScoreResume.disabled = false;
+        if (spinnerResume) spinnerResume.classList.add('hidden');
+        if (originalText) originalText.textContent = '✨ Rate My Resume';
+      }
+    });
+  }
+
+  function renderResumeEvaluation(data) {
+    if (!resumeEmptyPrompt || !resumeResultsContent) return;
+
+    resumeEmptyPrompt.classList.add('hidden');
+    resumeResultsContent.classList.remove('hidden');
+
+    // 1. Score gauge & badge
+    if (resumeScoreVal) {
+      animateNumber(resumeScoreVal, 0, data.score, 800);
+    }
+
+    if (resumeScoreGauge) {
+      resumeScoreGauge.style.borderColor = data.tierColor || '#6366f1';
+      resumeScoreGauge.style.boxShadow = `0 0 20px ${data.tierColor}40`;
+    }
+
+    if (resumeTierBadge) {
+      resumeTierBadge.textContent = data.tierBadge || '⭐ Solid Foundation';
+      resumeTierBadge.style.backgroundColor = `${data.tierColor}20`;
+      resumeTierBadge.style.color = data.tierColor || '#10b981';
+      resumeTierBadge.style.border = `1px solid ${data.tierColor}50`;
+    }
+
+    if (resumeTierTitle) {
+      resumeTierTitle.textContent = data.tier || 'Candidate Profile';
+    }
+
+    if (resumeScoreDesc) {
+      resumeScoreDesc.textContent = `Analyzed ${data.wordCount} words against ${data.matchedKeywordsCount} matched technical competencies.`;
+    }
+
+    // 2. Rubric Progress Bars
+    const rubric = data.rubric || {};
+    updateProgressBar(barVerbs, scoreValVerbs, rubric.impactAndVerbs || 0);
+    updateProgressBar(barTech, scoreValTech, rubric.techKeywordAlignment || 0);
+    updateProgressBar(barMetrics, scoreValMetrics, rubric.quantifiedOutcomes || 0);
+    updateProgressBar(barSections, scoreValSections, rubric.atsStructure || 0);
+
+    // 3. Core Sections Checklist
+    if (resumeSectionsGroup) {
+      resumeSectionsGroup.innerHTML = '';
+      const secMap = [
+        { key: 'summary', label: 'Summary / Profile' },
+        { key: 'experience', label: 'Work Experience' },
+        { key: 'projects', label: 'Technical Projects' },
+        { key: 'skills', label: 'Technical Skills' },
+        { key: 'education', label: 'Education & Degree' }
+      ];
+
+      secMap.forEach(sec => {
+        const found = data.sectionsFound && data.sectionsFound[sec.key];
+        const badge = document.createElement('span');
+        badge.className = `sec-badge ${found ? 'found' : 'missing'}`;
+        badge.innerHTML = `${found ? '✓' : '✗'} ${sec.label}`;
+        resumeSectionsGroup.appendChild(badge);
+      });
+    }
+
+    // 4. Matched Skills Pills
+    if (matchedCount) matchedCount.textContent = data.matchedTechs ? data.matchedTechs.length : 0;
+    if (resumeMatchedSkills) {
+      resumeMatchedSkills.innerHTML = '';
+      if (data.matchedTechs && data.matchedTechs.length > 0) {
+        data.matchedTechs.forEach(tech => {
+          const pill = document.createElement('span');
+          pill.className = 'skill-pill match';
+          pill.textContent = `✓ ${tech}`;
+          resumeMatchedSkills.appendChild(pill);
+        });
+      } else {
+        resumeMatchedSkills.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">No core stack keywords detected yet.</span>';
+      }
+    }
+
+    // 5. Missing / Recommended Skills Pills
+    if (resumeMissingSkills) {
+      resumeMissingSkills.innerHTML = '';
+      if (data.missingSkills && data.missingSkills.length > 0) {
+        data.missingSkills.forEach(skill => {
+          const pill = document.createElement('span');
+          pill.className = 'skill-pill missing';
+          pill.textContent = `+ ${skill}`;
+          resumeMissingSkills.appendChild(pill);
+        });
+      } else {
+        resumeMissingSkills.innerHTML = '<span style="font-size:0.8rem; color:#10b981;">Awesome! All target role competencies are represented.</span>';
+      }
+    }
+
+    // 6. Detected Clichés / Fluff
+    if (resumeFluffWrap && resumeFluffSkills) {
+      if (data.detectedFluff && data.detectedFluff.length > 0) {
+        resumeFluffWrap.classList.remove('hidden');
+        resumeFluffSkills.innerHTML = '';
+        data.detectedFluff.forEach(fluff => {
+          const pill = document.createElement('span');
+          pill.className = 'skill-pill fluff';
+          pill.textContent = `"${fluff}"`;
+          resumeFluffSkills.appendChild(pill);
+        });
+      } else {
+        resumeFluffWrap.classList.add('hidden');
+      }
+    }
+
+    // 7. Actionable Recommendations List
+    if (resumeAdviceList) {
+      resumeAdviceList.innerHTML = '';
+      if (data.recommendations && data.recommendations.length > 0) {
+        data.recommendations.forEach(rec => {
+          const li = document.createElement('li');
+          li.className = 'rec-item';
+          li.innerHTML = `<span class="rec-icon">⚡</span><span>${escapeHtml(rec)}</span>`;
+          resumeAdviceList.appendChild(li);
+        });
+      }
+    }
+  }
+
+  function updateProgressBar(barEl, textEl, percentage) {
+    const val = Math.max(0, Math.min(100, percentage));
+    if (barEl) barEl.style.width = `${val}%`;
+    if (textEl) textEl.textContent = `${val}%`;
+  }
+
+  function animateNumber(element, start, end, duration) {
+    if (!element) return;
+    const startTime = performance.now();
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentVal = Math.round(start + (end - start) * progress);
+      element.textContent = currentVal;
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      }
+    }
+    requestAnimationFrame(update);
   }
 
   // Initial Auth Check
