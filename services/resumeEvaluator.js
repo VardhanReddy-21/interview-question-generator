@@ -93,24 +93,9 @@ class ResumeEvaluator {
       }
     });
 
-    // 5. Recommended Skills based on Target Role
-    const roleRecommendations = {
-      "Full Stack": ["JavaScript", "React", "Node.js", "SQL", "HTML5", "CSS3", "Git"],
-      "Python": ["Python", "FastAPI/Django", "SQL", "Docker", "Asyncio", "REST APIs"],
-      "Java": ["Java 17+", "Spring Boot", "JVM Tuning", "Multithreading", "MySQL/PostgreSQL"],
-      "C / Embedded": ["C", "C++", "Pointers", "Memory Management", "RTOS", "Linux"],
-      "Frontend": ["React", "JavaScript (ES6+)", "HTML5 & a11y", "CSS Grid/Flexbox", "TypeScript"],
-      "Database": ["SQL", "MySQL / PostgreSQL", "Query Optimization", "Indexing", "ACID"]
-    };
-
-    let targetRoleKeywords = roleRecommendations["Full Stack"];
-    Object.keys(roleRecommendations).forEach(k => {
-      if (targetRole.toLowerCase().includes(k.toLowerCase())) {
-        targetRoleKeywords = roleRecommendations[k];
-      }
-    });
-
-    const missingSkills = targetRoleKeywords.filter(skill => {
+    // 5. Recommended Core Engineering Competencies
+    const coreRecommendations = ["JavaScript", "Python", "Java", "SQL", "React", "Node.js", "Docker", "Git", "Data Structures"];
+    const missingSkills = coreRecommendations.filter(skill => {
       const normalized = skill.toLowerCase().replace(/[^a-z0-9]/g, '');
       return !lower.includes(normalized);
     });
@@ -148,7 +133,7 @@ class ResumeEvaluator {
       tierBadge = "⚠️ Optimization Recommended";
     }
 
-    // 8. Generate Specific, Actionable Recommendations
+    // 8. Generate Specific, Actionable Recommendations (Role-Agnostic & Confidential)
     const recommendations = [];
 
     if (metricScore < 60) {
@@ -160,7 +145,7 @@ class ResumeEvaluator {
     }
 
     if (missingSkills.length > 0) {
-      recommendations.push(`Add target competencies for ${targetRole}: Consider highlighting hands-on experience with ${missingSkills.slice(0, 3).join(', ')}.`);
+      recommendations.push(`Consider highlighting hands-on experience with: ${missingSkills.slice(0, 3).join(', ')} to maximize ATS keyword alignment.`);
     }
 
     if (!sections.projects) {

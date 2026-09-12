@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const headerSearchTopic = document.getElementById('header-search-topic');
   const globalSearchInput = document.getElementById('global-search-input');
   const searchClearBtn = document.getElementById('search-clear-btn');
+  const searchSubmitBtn = document.getElementById('search-submit-btn');
   const searchResultsHeading = document.getElementById('search-results-heading');
   const searchResultsSubheading = document.getElementById('search-results-subheading');
   const searchResultsContainer = document.getElementById('search-results-container');
@@ -912,23 +913,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // 10. SEARCH BAR & LIVE FILTERING
   // ==========================================================================
   if (globalSearchInput) {
+    // Only toggle clear button visibility while typing — DO NOT auto-search
     globalSearchInput.addEventListener('input', () => {
       const q = globalSearchInput.value.trim();
       if (searchClearBtn) {
         if (q.length > 0) searchClearBtn.classList.remove('hidden');
         else searchClearBtn.classList.add('hidden');
       }
+    });
 
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        executeSearch(q);
-      }, 280);
+    // Execute search ONLY when user presses Enter
+    globalSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeSearch(globalSearchInput.value.trim());
+      }
+    });
+  }
+
+  // Execute search when user clicks the Search (🔍) button
+  if (searchSubmitBtn) {
+    searchSubmitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      executeSearch(globalSearchInput ? globalSearchInput.value.trim() : '');
     });
   }
 
   if (headerSearchTopic) {
     headerSearchTopic.addEventListener('change', () => {
-      executeSearch(globalSearchInput ? globalSearchInput.value.trim() : '');
+      // Only re-query automatically if the user is already on the search results view
+      if (activeView === 'search') {
+        executeSearch(globalSearchInput ? globalSearchInput.value.trim() : '');
+      }
     });
   }
 
@@ -1526,11 +1542,10 @@ Results-driven Senior Software Engineer with 5+ years of experience architecting
   if (btnScoreResume) {
     btnScoreResume.addEventListener('click', async () => {
       const resumeText = resumeTextInput ? resumeTextInput.value.trim() : '';
-      const targetRole = resumeTargetRole ? resumeTargetRole.value : 'Full Stack / Web Developer';
       const jdText = resumeJdInput ? resumeJdInput.value.trim() : '';
 
       if (!resumeText || resumeText.split(/\s+/).filter(w => w.length > 0).length < 20) {
-        alert("Please paste at least 20 words of your resume (or click '⚡ Load Sample Resume') to analyze!");
+        alert("Please paste at least 20 words of your resume (or click '⚡ Load Sample') to analyze!");
         return;
       }
 
@@ -1544,7 +1559,7 @@ Results-driven Senior Software Engineer with 5+ years of experience architecting
         const response = await fetch('/api/resume/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resumeText, targetRole, jdText })
+          body: JSON.stringify({ resumeText, targetRole: '', jdText })
         });
 
         const data = await response.json();
@@ -1651,7 +1666,7 @@ Results-driven Senior Software Engineer with 5+ years of experience architecting
           resumeMissingSkills.appendChild(pill);
         });
       } else {
-        resumeMissingSkills.innerHTML = '<span style="font-size:0.8rem; color:#10b981;">Awesome! All target role competencies are represented.</span>';
+        resumeMissingSkills.innerHTML = '<span style="font-size:0.8rem; color:#10b981;">Awesome! All core technical competencies are represented.</span>';
       }
     }
 

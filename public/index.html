@@ -39,8 +39,10 @@
         <button class="nav-btn" id="nav-explore" title="Explore All 50 Questions">
           <span class="nav-icon">🌟</span> <span>Explore</span>
         </button>
-        <button class="nav-btn" id="nav-resume" title="AI & ATS Resume Review & Scoring">
-          <span class="nav-icon">📄</span> <span>Resume Review</span>
+        <button class="nav-btn nav-btn-resume" id="nav-resume" title="AI & ATS Resume Review & Scoring">
+          <span class="nav-resume-icon-badge">📄✨</span>
+          <span>Resume Review</span>
+          <span class="nav-pill-badge">ATS</span>
         </button>
         <button class="nav-btn" id="nav-dashboard" title="Candidate Dashboard">
           <span class="nav-icon">📊</span> <span>Dashboard</span>
@@ -55,7 +57,7 @@
 
       <!-- Search & Controls Section -->
       <div class="header-center-search">
-        <div class="search-wrapper">
+        <div class="search-wrapper" id="header-search-wrapper">
           <select id="header-search-topic" class="search-topic-select" title="Filter by Topic">
             <option value="all">🌐 All</option>
             <option value="c">⚙️ C</option>
@@ -71,9 +73,11 @@
             <option value="react">⚛️ React</option>
             <option value="ds">🧩 DS</option>
           </select>
-          <span class="search-icon">🔍</span>
-          <input type="text" id="global-search-input" placeholder="Search questions..." autocomplete="off" />
-          <button id="search-clear-btn" class="search-clear hidden" title="Clear search">✕</button>
+          <input type="text" id="global-search-input" placeholder="Search topic & press Enter or 🔍" autocomplete="off" />
+          <button id="search-clear-btn" class="search-clear hidden" title="Clear search" type="button">✕</button>
+          <button id="search-submit-btn" class="search-submit-btn" title="Search (or press Enter)" type="button">
+            <span class="search-icon">🔍</span>
+          </button>
         </div>
       </div>
 
@@ -561,8 +565,23 @@
   <section class="resume-view-layout hidden" id="view-resume">
     <div class="view-header">
       <div>
-        <h2 class="view-title">📄 AI & ATS Resume Checker & Score Rating</h2>
+        <h2 class="view-title">📄 AI &amp; ATS Resume Review &amp; Score Rating</h2>
         <p class="view-subtitle">Evaluate your resume against automated ATS filters, tech stack alignment (C, Python, Java, SQL, React, Node, DS), action verbs, and quantifiable metrics.</p>
+      </div>
+    </div>
+
+    <!-- Privacy & Security Guarantee Banner -->
+    <div class="resume-security-banner">
+      <div class="sec-banner-left">
+        <span class="sec-banner-icon">🔒</span>
+        <div class="sec-banner-info">
+          <strong>100% Confidential &amp; Client-Side Secure:</strong>
+          <span>Your resume and personal details are analyzed strictly in-memory for this session only. Your data is never saved to a database, logged, or shared with anyone.</span>
+        </div>
+      </div>
+      <div class="sec-banner-badge">
+        <span class="shield-icon">🛡️</span>
+        <span>Zero-Retention Verified</span>
       </div>
     </div>
 
@@ -570,40 +589,31 @@
       <!-- Left Column: Input Form -->
       <div class="resume-input-card">
         <div class="card-header-simple">
-          <h3>📝 Resume & Role Details</h3>
-          <span class="badge-accent">ATS Engine</span>
-        </div>
-
-        <div class="form-group">
-          <label for="resume-target-role">Target Role</label>
-          <select id="resume-target-role" class="form-control">
-            <option value="Full Stack / Web Developer">Full Stack / Web Developer</option>
-            <option value="Frontend Engineer (React / HTML / CSS / JS)">Frontend Engineer (React / JS)</option>
-            <option value="Node.js Backend Developer">Node.js Backend Developer</option>
-            <option value="Python / Backend Developer">Python / Backend Developer</option>
-            <option value="Java / Enterprise Backend Engineer">Java Backend Engineer</option>
-            <option value="SQL & Database Engineer">SQL & Database Engineer</option>
-            <option value="C / Embedded Systems Developer">C / Embedded Systems Developer</option>
-            <option value="C++ Software Engineer">C++ Software Engineer</option>
-            <option value="Data Structures & Algorithms Specialist">Data Structures & Algorithms</option>
-            <option value="General Software Engineer">General Software Engineer</option>
-          </select>
+          <h3>📄 Resume Evaluator</h3>
+          <span class="badge-accent">🔒 Private &amp; Secure</span>
         </div>
 
         <div class="form-group">
           <details class="jd-details">
             <summary class="jd-summary">📋 Add Target Job Description (Optional)</summary>
-            <textarea id="resume-jd-input" class="form-control jd-textarea" rows="3" placeholder="Paste the job description to check keyword alignment against this specific opening..."></textarea>
+            <textarea id="resume-jd-input" class="form-control jd-textarea" rows="3" placeholder="Paste optional job description to check keyword alignment against this specific opening..."></textarea>
           </details>
         </div>
 
-        <!-- File Upload Dropzone -->
+        <!-- File Upload Dropzone with Illustrated Graphic -->
         <div class="form-group">
           <label>Upload Resume File</label>
           <div class="resume-dropzone" id="resume-dropzone">
             <input type="file" id="resume-file-input" accept=".pdf,.docx,.txt,.md,.rtf" class="hidden-file-input" />
             <div class="dropzone-content" id="dropzone-content">
-              <div class="dropzone-icon">📁</div>
+              <div class="dropzone-art">
+                <svg class="resume-svg-graphic" viewBox="0 0 64 64" width="48" height="48" fill="none">
+                  <rect x="14" y="6" width="36" height="52" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="2.5"/>
+                  <path d="M22 18h16M22 26h20M22 34h18M22 42h14" stroke="#a5b4fc" stroke-width="2.5" stroke-linecap="round"/>
+                  <circle cx="44" cy="46" r="11" fill="#10b981"/>
+                  <path d="M39 46l3.5 3.5 6.5-6.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
               <div class="dropzone-text">
                 <strong>Click to browse</strong> or drag &amp; drop your resume here
               </div>
@@ -637,17 +647,21 @@
         </div>
 
         <div class="resume-actions-row">
-          <button type="button" class="btn-secondary" id="btn-sample-resume" title="Fill with sample senior engineer resume">
-            ⚡ Load Sample
+          <button type="button" class="btn-design-action btn-sample-styled" id="btn-sample-resume" title="Fill with sample senior engineer resume">
+            <span class="btn-action-icon">⚡</span>
+            <span>Load Sample</span>
           </button>
-          <button type="button" class="btn-secondary" id="btn-download-sample" title="Download sample resume as a .txt file to test upload">
-            📥 Download Sample (.txt)
+          <button type="button" class="btn-design-action btn-download-styled" id="btn-download-sample" title="Download sample resume as a .txt file to test upload">
+            <span class="btn-action-icon">📥</span>
+            <span>Download Sample</span>
           </button>
-          <button type="button" class="btn-secondary" id="btn-clear-resume" title="Clear text">
-            🧹 Clear
+          <button type="button" class="btn-design-action btn-clear-styled" id="btn-clear-resume" title="Clear text">
+            <span class="btn-action-icon">🧹</span>
+            <span>Clear</span>
           </button>
-          <button type="button" class="btn-primary flex-1" id="btn-score-resume">
-            <span class="btn-text">✨ Rate My Resume</span>
+          <button type="button" class="btn-score-premium flex-1" id="btn-score-resume">
+            <span class="btn-action-icon">🎯</span>
+            <span class="btn-text">Rate &amp; Score My Resume</span>
             <span class="btn-spinner hidden" id="spinner-resume"></span>
           </button>
         </div>
@@ -659,13 +673,13 @@
         <div class="resume-empty-prompt" id="resume-empty-prompt">
           <div class="empty-icon">📊</div>
           <h3>Ready to Score Your Resume</h3>
-          <p>Paste your resume on the left or click <strong>"⚡ Load Sample Resume"</strong> to test immediately. Our analyzer will score:</p>
+          <p>Paste your resume on the left or click <strong>"⚡ Load Sample"</strong> to test immediately. Our analyzer will score:</p>
           <ul class="empty-features-list">
             <li>🎯 <strong>Overall ATS Rating (0–100)</strong> and candidate competitive tier</li>
             <li>🚀 <strong>Strong Action Verb Density</strong> (Architected, Engineered, Optimized)</li>
             <li>💻 <strong>Keyword Alignment</strong> across 12 tech disciplines (C, Java, SQL, React, etc.)</li>
             <li>📈 <strong>Quantified Business Outcomes</strong> (%, ms, latency reductions, user scale)</li>
-            <li>📐 <strong>ATS Structure & Core Sections</strong> completeness checklist</li>
+            <li>📐 <strong>ATS Structure &amp; Core Sections</strong> completeness checklist</li>
           </ul>
         </div>
 
@@ -688,7 +702,7 @@
           <div class="rubric-grid">
             <div class="rubric-item">
               <div class="rubric-header">
-                <span>🚀 Impact & Action Verbs</span>
+                <span>🚀 Impact &amp; Action Verbs</span>
                 <span id="score-val-verbs">0%</span>
               </div>
               <div class="progress-track">
@@ -741,7 +755,7 @@
 
           <!-- Missing Skills -->
           <div class="skills-block">
-            <h4 class="skills-title warning-title">⚠️ Recommended Skills for Target Role</h4>
+            <h4 class="skills-title warning-title">💡 Recommended Skills to Highlight</h4>
             <div class="skills-pill-wrap" id="resume-missing-skills"></div>
           </div>
 
