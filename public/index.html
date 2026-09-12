@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="style.css" />
   <!-- Client-Side Document Parsing for PDF & Word Resume Uploads -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -23,8 +24,56 @@
   <header class="app-header">
     <div class="header-container">
       <!-- Brand & Home link -->
-      <div class="brand" id="brand-home" title="Go to Home">
-        <div class="brand-badge">⚡ IQ</div>
+      <div class="brand" id="brand-home" title="Go to Home — Get Ready for Study">
+        <div class="brand-logo-wrap" aria-label="Open Book Study Logo">
+          <svg class="brand-logo-svg" viewBox="0 0 48 48" width="40" height="40" fill="none">
+            <defs>
+              <linearGradient id="headerBookGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="50%" stop-color="#a855f7"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+              <linearGradient id="headerPageLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#818cf8"/>
+                <stop offset="100%" stop-color="#6366f1"/>
+              </linearGradient>
+              <linearGradient id="headerPageRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#c084fc"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+              <linearGradient id="headerGoldSpark" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fef08a"/>
+                <stop offset="50%" stop-color="#fbbf24"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <!-- Squircle Outer Frame with Gradient Border -->
+            <rect x="2" y="2" width="44" height="44" rx="12" class="brand-logo-bg" stroke="url(#headerBookGlow)" stroke-width="2"/>
+            <!-- Center Knowledge Glow -->
+            <circle cx="24" cy="24" r="14" fill="url(#headerBookGlow)" opacity="0.18"/>
+            <!-- Floating Intellect / Knowledge Spark above Book -->
+            <path d="M24 6 L25.5 11.5 L31 13 L25.5 14.5 L24 20 L22.5 14.5 L17 13 L22.5 11.5 Z" fill="url(#headerGoldSpark)"/>
+            <circle cx="14" cy="11" r="1.2" fill="#67e8f9" opacity="0.9"/>
+            <circle cx="34" cy="11" r="1.2" fill="#f472b6" opacity="0.9"/>
+            <!-- Open Book Left Page -->
+            <path d="M24 38 C19 35.5 13 35.5 8 38 L8 22 C13 19.5 19 19.5 24 22 Z" fill="url(#headerPageLeft)"/>
+            <path d="M24 35 C19 33 13 33 9 35 L9 20 C13 18 19 18 24 20 Z" fill="#93c5fd" opacity="0.38"/>
+            <!-- Open Book Right Page -->
+            <path d="M24 38 C29 35.5 35 35.5 40 38 L40 22 C35 19.5 29 19.5 24 22 Z" fill="url(#headerPageRight)"/>
+            <path d="M24 35 C29 33 35 33 39 35 L39 20 C35 18 29 18 24 20 Z" fill="#f9a8d4" opacity="0.38"/>
+            <!-- Page Content / Code Lines Left -->
+            <line x1="12" y1="24.5" x2="20" y2="23.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+            <line x1="12" y1="28" x2="19" y2="27" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
+            <line x1="12" y1="31.5" x2="17" y2="30.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <!-- Page Content / Code Lines Right -->
+            <line x1="28" y1="23.5" x2="36" y2="24.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+            <line x1="29" y1="27" x2="36" y2="28" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
+            <line x1="31" y1="30.5" x2="36" y2="31.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <!-- Spine and Bookmark Ribbon -->
+            <path d="M23.2 21.5 L24 38.5 L24.8 21.5" stroke="#312e81" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M23.5 22 L24.5 22 L24.5 31 L24 29.5 L23.5 31 Z" fill="#10b981"/>
+          </svg>
+        </div>
         <div class="brand-text">
           <h1 class="brand-title">Get Ready for <span class="gradient-text">Study</span></h1>
           <p class="brand-subtitle"><a href="https://interview-question-generator-omega.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">interview-question-generator-omega.vercel.app</a></p>
@@ -797,7 +846,27 @@
       <button class="modal-close-btn" id="modal-close-btn" title="Close">✕</button>
       
       <div class="modal-header">
-        <div class="modal-badge-icon">🎓</div>
+        <div class="modal-brand-logo">
+          <svg class="brand-logo-svg modal-svg-logo" viewBox="0 0 48 48" width="52" height="52" fill="none">
+            <rect x="2" y="2" width="44" height="44" rx="12" class="brand-logo-bg" stroke="url(#headerBookGlow)" stroke-width="2"/>
+            <circle cx="24" cy="24" r="14" fill="url(#headerBookGlow)" opacity="0.18"/>
+            <path d="M24 6 L25.5 11.5 L31 13 L25.5 14.5 L24 20 L22.5 14.5 L17 13 L22.5 11.5 Z" fill="url(#headerGoldSpark)"/>
+            <circle cx="14" cy="11" r="1.2" fill="#67e8f9" opacity="0.9"/>
+            <circle cx="34" cy="11" r="1.2" fill="#f472b6" opacity="0.9"/>
+            <path d="M24 38 C19 35.5 13 35.5 8 38 L8 22 C13 19.5 19 19.5 24 22 Z" fill="url(#headerPageLeft)"/>
+            <path d="M24 35 C19 33 13 33 9 35 L9 20 C13 18 19 18 24 20 Z" fill="#93c5fd" opacity="0.38"/>
+            <path d="M24 38 C29 35.5 35 35.5 40 38 L40 22 C35 19.5 29 19.5 24 22 Z" fill="url(#headerPageRight)"/>
+            <path d="M24 35 C29 33 35 33 39 35 L39 20 C35 18 29 18 24 20 Z" fill="#f9a8d4" opacity="0.38"/>
+            <line x1="12" y1="24.5" x2="20" y2="23.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+            <line x1="12" y1="28" x2="19" y2="27" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
+            <line x1="12" y1="31.5" x2="17" y2="30.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <line x1="28" y1="23.5" x2="36" y2="24.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+            <line x1="29" y1="27" x2="36" y2="28" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.75"/>
+            <line x1="31" y1="30.5" x2="36" y2="31.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <path d="M23.2 21.5 L24 38.5 L24.8 21.5" stroke="#312e81" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M23.5 22 L24.5 22 L24.5 31 L24 29.5 L23.5 31 Z" fill="#10b981"/>
+          </svg>
+        </div>
         <h3 class="modal-title" id="modal-title">Welcome to Get Ready for Study</h3>
         <p class="modal-subtitle">Register with your Gmail or sign in directly with Google to track your interview practice and readiness score.</p>
       </div>
